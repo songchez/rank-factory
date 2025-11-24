@@ -1,28 +1,54 @@
-import type React from "react"
-import type { Metadata } from "next"
+import type React from "react";
+import type { Metadata } from "next";
 
-import { Analytics } from "@vercel/analytics/next"
-import "./globals.css"
+import { Analytics } from "@vercel/analytics/next";
+import "./globals.css";
 
-import { Black_Han_Sans, Jua, DM_Sans as V0_Font_DM_Sans, Space_Mono as V0_Font_Space_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
+import {
+  Black_Han_Sans,
+  Jua,
+  DM_Sans as V0_Font_DM_Sans,
+  Space_Mono as V0_Font_Space_Mono,
+  Source_Serif_4 as V0_Font_Source_Serif_4,
+} from "next/font/google";
 
 // Initialize fonts
-const _dmSans = V0_Font_DM_Sans({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900","1000"] })
-const _spaceMono = V0_Font_Space_Mono({ subsets: ['latin'], weight: ["400","700"] })
-const _sourceSerif_4 = V0_Font_Source_Serif_4({ subsets: ['latin'], weight: ["200","300","400","500","600","700","800","900"] })
+const _dmSans = V0_Font_DM_Sans({
+  subsets: ["latin"],
+  weight: [
+    "100",
+    "200",
+    "300",
+    "400",
+    "500",
+    "600",
+    "700",
+    "800",
+    "900",
+    "1000",
+  ],
+});
+const _spaceMono = V0_Font_Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+const _sourceSerif_4 = V0_Font_Source_Serif_4({
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
+});
 
 // <CHANGE> Added Korean fonts for retro aesthetic
 const blackHanSans = Black_Han_Sans({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-black-han-sans",
-})
+});
 
 const jua = Jua({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-jua",
-})
+});
 
 export const metadata: Metadata = {
   title: "랭킹공장 | Rank Factory",
@@ -45,12 +71,12 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-icon.png",
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="ko" className={`${blackHanSans.variable} ${jua.variable}`}>
@@ -59,5 +85,5 @@ export default function RootLayout({
         <Analytics />
       </body>
     </html>
-  )
+  );
 }

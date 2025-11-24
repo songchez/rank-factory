@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { getTopicById } from "@/lib/mock-data"
-import { Header } from "@/components/header"
 import { NeoCard } from "@/components/neo-card"
 import { NeoButton } from "@/components/neo-button"
 import { CommentsDrawer } from "@/components/comments-drawer"
@@ -44,8 +43,6 @@ export default function RankingPage() {
 
   return (
     <div className="min-h-screen">
-      <Header />
-
       <main className="container mx-auto px-4 py-8">
         {/* Title */}
         <div className="mb-8 text-center">
