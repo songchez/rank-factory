@@ -1,14 +1,15 @@
-import { Header } from "@/components/header"
-import { NeoCard } from "@/components/neo-card"
-import { NeoButton } from "@/components/neo-button"
-import { mockTopics } from "@/lib/mock-data"
-import Link from "next/link"
-import Image from "next/image"
+import { Header } from "@/components/header";
+import { NeoCard } from "@/components/neo-card";
+import { NeoButton } from "@/components/neo-button";
+import { mockTopics } from "@/lib/mock-data";
+import Link from "next/link";
+import Image from "next/image";
+export const runtime = "edge";
 
 export default function HomePage() {
-  const featuredTopic = mockTopics[0]
-  const topItems = featuredTopic.items.slice(0, 5)
-  const newTopic = mockTopics[mockTopics.length - 1]
+  const featuredTopic = mockTopics[0];
+  const topItems = featuredTopic.items.slice(0, 5);
+  const newTopic = mockTopics[mockTopics.length - 1];
 
   return (
     <div className="min-h-screen">
@@ -17,37 +18,52 @@ export default function HomePage() {
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section */}
         <div className="mb-8">
-          <h1 className="font-heading text-4xl md:text-6xl mb-4 text-center">세상 모든 것에 서열을</h1>
-          <p className="text-center text-lg md:text-xl mb-2">반박 시 니 말이 틀림</p>
+          <h1 className="font-heading text-4xl md:text-6xl mb-4 text-center">
+            세상 모든 것에 서열을
+          </h1>
+          <p className="text-center text-lg md:text-xl mb-2">
+            반박 시 니 말이 틀림
+          </p>
         </div>
 
         {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Hero Card - Featured Battle */}
-          <Link href={`/battle/${featuredTopic.id}`} className="md:col-span-2 md:row-span-2">
+          <Link
+            href={`/battle/${featuredTopic.id}`}
+            className="md:col-span-2 md:row-span-2"
+          >
             <NeoCard className="h-full hover:translate-x-1 hover:translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer overflow-hidden p-0">
               <div className="relative h-full min-h-[400px]">
                 <div className="absolute inset-0 grid grid-cols-2">
                   <div className="relative">
                     <Image
-                      src={featuredTopic.items[0].imageUrl || "/placeholder.svg"}
+                      src={
+                        featuredTopic.items[0].imageUrl || "/placeholder.svg"
+                      }
                       alt={featuredTopic.items[0].name}
                       fill
                       className="object-cover"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-primary p-4 border-t-3 border-r-3 border-black">
-                      <p className="font-heading text-xl text-center">{featuredTopic.items[0].name}</p>
+                      <p className="font-heading text-xl text-center">
+                        {featuredTopic.items[0].name}
+                      </p>
                     </div>
                   </div>
                   <div className="relative">
                     <Image
-                      src={featuredTopic.items[1].imageUrl || "/placeholder.svg"}
+                      src={
+                        featuredTopic.items[1].imageUrl || "/placeholder.svg"
+                      }
                       alt={featuredTopic.items[1].name}
                       fill
                       className="object-cover"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-secondary p-4 border-t-3 border-l-3 border-black">
-                      <p className="font-heading text-xl text-center text-white">{featuredTopic.items[1].name}</p>
+                      <p className="font-heading text-xl text-center text-white">
+                        {featuredTopic.items[1].name}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -61,8 +77,12 @@ export default function HomePage() {
 
                 {/* Title Overlay */}
                 <div className="absolute top-0 left-0 right-0 bg-background/95 border-b-3 border-black p-4">
-                  <p className="font-heading text-2xl text-center">오늘의 빅매치</p>
-                  <p className="text-center text-sm mt-1">{featuredTopic.title}</p>
+                  <p className="font-heading text-2xl text-center">
+                    오늘의 빅매치
+                  </p>
+                  <p className="text-center text-sm mt-1">
+                    {featuredTopic.title}
+                  </p>
                 </div>
               </div>
             </NeoCard>
@@ -73,15 +93,26 @@ export default function HomePage() {
             <h2 className="font-heading text-2xl mb-4">실시간 급상승</h2>
             <div className="space-y-3">
               {topItems.map((item, index) => (
-                <div key={item.id} className="flex items-center gap-3 bg-background border-2 border-black p-3">
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 bg-background border-2 border-black p-3"
+                >
                   <span className="font-heading text-2xl w-8">{index + 1}</span>
                   <div className="flex-1">
                     <p className="font-bold text-sm">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">ELO {item.eloScore}</p>
+                    <p className="text-xs text-muted-foreground">
+                      ELO {item.eloScore}
+                    </p>
                   </div>
-                  {item.change && item.change > 0 && <span className="text-secondary font-bold">▲{item.change}</span>}
+                  {item.change && item.change > 0 && (
+                    <span className="text-secondary font-bold">
+                      ▲{item.change}
+                    </span>
+                  )}
                   {item.change && item.change < 0 && (
-                    <span className="text-accent font-bold">▼{Math.abs(item.change)}</span>
+                    <span className="text-accent font-bold">
+                      ▼{Math.abs(item.change)}
+                    </span>
                   )}
                 </div>
               ))}
@@ -113,7 +144,9 @@ export default function HomePage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs mb-1">AI 신규 생성</p>
-                  <h3 className="font-heading text-xl mb-2">{newTopic.title}</h3>
+                  <h3 className="font-heading text-xl mb-2">
+                    {newTopic.title}
+                  </h3>
                   <p className="text-sm">방금 생성됨 • {newTopic.category}</p>
                 </div>
               </div>
@@ -148,7 +181,9 @@ export default function HomePage() {
                   </div>
                   <h3 className="font-heading text-xl mb-2">{topic.title}</h3>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="bg-primary px-2 py-1 border-2 border-black">{topic.category}</span>
+                    <span className="bg-primary px-2 py-1 border-2 border-black">
+                      {topic.category}
+                    </span>
                     <span>{topic.items.length}개 항목</span>
                   </div>
                 </NeoCard>
@@ -158,5 +193,5 @@ export default function HomePage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
