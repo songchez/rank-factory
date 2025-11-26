@@ -7,8 +7,7 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static"
+    "deploy": "pnpm build && npx @opennextjs/cloudflare && wrangler deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

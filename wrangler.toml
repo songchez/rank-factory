@@ -1,0 +1,10 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "rank-factory" # 프로젝트 이름
+main = ".open-next/worker.js" # OpenNext가 만드는 실행 파일 위치
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"] # Next.js 실행을 위한 필수 플래그
+
+# 정적 파일(이미지, CSS 등) 설정
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
