@@ -1,15 +1,36 @@
 import { Header } from "@/components/header";
 import { NeoCard } from "@/components/neo-card";
 import { NeoButton } from "@/components/neo-button";
-import { mockTopics } from "@/lib/mock-data";
+import { getTopics } from "@/lib/data";
 import Link from "next/link";
 import Image from "next/image";
+
 export const runtime = "edge";
 
-export default function HomePage() {
-  const featuredTopic = mockTopics[0];
-  const topItems = featuredTopic.items.slice(0, 5);
-  const newTopic = mockTopics[mockTopics.length - 1];
+export default async function HomePage() {
+  const { topics } = await getTopics();
+  
+  // Fallback if no topics (e.g. before seeding)
+  if (topics.length === 0) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <main className="container mx-auto px-4 py-8 text-center">
+          <h1 className="font-heading text-4xl mb-4">데이터가 없습니다</h1>
+          <p>관리자에게 문의하거나 시딩을 진행해주세요.</p>
+          <Link href="/api/seed">
+            <NeoButton className="mt-4">데이터 시딩하기</NeoButton>
+          </Link>
+        </main>
+      </div>
+    );
+  }
+
+  const featuredTopic = topics[0];
+  const topItems = featuredTopic.items
+    .sort((a, b) => b.eloScore - a.eloScore)
+    .slice(0, 5);
+  const newTopic = topics[topics.length - 1]; // Or logic for "newest"
 
   return (
     <div className="min-h-screen">
@@ -39,30 +60,30 @@ export default function HomePage() {
                   <div className="relative">
                     <Image
                       src={
-                        featuredTopic.items[0].imageUrl || "/placeholder.svg"
+                        featuredTopic.items[0]?.imageUrl || "/placeholder.svg"
                       }
-                      alt={featuredTopic.items[0].name}
+                      alt={featuredTopic.items[0]?.name || "Candidate 1"}
                       fill
                       className="object-cover"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-primary p-4 border-t-3 border-r-3 border-black">
                       <p className="font-heading text-xl text-center">
-                        {featuredTopic.items[0].name}
+                        {featuredTopic.items[0]?.name}
                       </p>
                     </div>
                   </div>
                   <div className="relative">
                     <Image
                       src={
-                        featuredTopic.items[1].imageUrl || "/placeholder.svg"
+                        featuredTopic.items[1]?.imageUrl || "/placeholder.svg"
                       }
-                      alt={featuredTopic.items[1].name}
+                      alt={featuredTopic.items[1]?.name || "Candidate 2"}
                       fill
                       className="object-cover"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-secondary p-4 border-t-3 border-l-3 border-black">
                       <p className="font-heading text-xl text-center text-white">
-                        {featuredTopic.items[1].name}
+                        {featuredTopic.items[1]?.name}
                       </p>
                     </div>
                   </div>
@@ -104,16 +125,7 @@ export default function HomePage() {
                       ELO {item.eloScore}
                     </p>
                   </div>
-                  {item.change && item.change > 0 && (
-                    <span className="text-secondary font-bold">
-                      ▲{item.change}
-                    </span>
-                  )}
-                  {item.change && item.change < 0 && (
-                    <span className="text-accent font-bold">
-                      ▼{Math.abs(item.change)}
-                    </span>
-                  )}
+                  {/* Change indicator logic would go here if we tracked history */}
                 </div>
               ))}
             </div>
@@ -133,7 +145,7 @@ export default function HomePage() {
               <div className="flex items-center gap-4">
                 <div className="relative w-24 h-24 border-3 border-black">
                   <Image
-                    src={newTopic.items[0].imageUrl || "/placeholder.svg"}
+                    src={newTopic.items[0]?.imageUrl || "/placeholder.svg"}
                     alt={newTopic.title}
                     fill
                     className="object-cover"
@@ -158,22 +170,22 @@ export default function HomePage() {
         <div className="mb-8">
           <h2 className="font-heading text-3xl mb-6">모든 배틀</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {mockTopics.map((topic) => (
+            {topics.map((topic) => (
               <Link key={topic.id} href={`/battle/${topic.id}`}>
                 <NeoCard className="hover:translate-x-1 hover:translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer">
                   <div className="flex gap-2 mb-4">
                     <div className="relative w-20 h-20 border-2 border-black">
                       <Image
-                        src={topic.items[0].imageUrl || "/placeholder.svg"}
-                        alt={topic.items[0].name}
+                        src={topic.items[0]?.imageUrl || "/placeholder.svg"}
+                        alt={topic.items[0]?.name}
                         fill
                         className="object-cover"
                       />
                     </div>
                     <div className="relative w-20 h-20 border-2 border-black">
                       <Image
-                        src={topic.items[1].imageUrl || "/placeholder.svg"}
-                        alt={topic.items[1].name}
+                        src={topic.items[1]?.imageUrl || "/placeholder.svg"}
+                        alt={topic.items[1]?.name}
                         fill
                         className="object-cover"
                       />

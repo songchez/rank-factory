@@ -4,92 +4,62 @@ import { useState } from "react"
 import { X, Heart, Send } from "lucide-react"
 import { NeoButton } from "./neo-button"
 import { NeoCard } from "./neo-card"
-
-interface Comment {
-  id: string
-  nickname: string
-  content: string
-  supportedItem: string
-  likes: number
-  createdAt: string
-}
+import { postCommentAction } from "@/lib/actions"
+import { type Comment } from "@/lib/types"
+import { useRouter } from "next/navigation"
 
 interface CommentsDrawerProps {
   isOpen: boolean
   onClose: () => void
+  topicId: string
   topicTitle: string
   items: Array<{ id: string; name: string }>
+  initialComments: Comment[]
 }
 
-const randomNicknames = [
-  "프로불편러",
-  "도파민중독자",
-  "결정장애왕",
-  "논쟁의달인",
-  "취향저격수",
-  "랭킹마스터",
-  "투표광",
-  "선택의신",
-  "밸런스왕",
-  "고인물",
-]
-
-function generateRandomNickname() {
-  return randomNicknames[Math.floor(Math.random() * randomNicknames.length)] + Math.floor(Math.random() * 9999)
-}
-
-const mockComments: Comment[] = [
-  {
-    id: "1",
-    nickname: "프로불편러1234",
-    content: "이게 1등이라고? 나라 망했네 ㅋㅋㅋ",
-    supportedItem: "신라면",
-    likes: 42,
-    createdAt: "5분 전",
-  },
-  {
-    id: "2",
-    nickname: "도파민중독자5678",
-    content: "불닭이 최고지 ㅇㅈ?",
-    supportedItem: "불닭볶음면",
-    likes: 28,
-    createdAt: "12분 전",
-  },
-  {
-    id: "3",
-    nickname: "결정장애왕9012",
-    content: "둘 다 맛있는데 고르기 너무 힘들어요 ㅠㅠ",
-    supportedItem: "진라면",
-    likes: 15,
-    createdAt: "23분 전",
-  },
-]
-
-export function CommentsDrawer({ isOpen, onClose, topicTitle, items }: CommentsDrawerProps) {
-  const [comments, setComments] = useState<Comment[]>(mockComments)
+export function CommentsDrawer({ isOpen, onClose, topicId, topicTitle, items, initialComments }: CommentsDrawerProps) {
+  const router = useRouter()
+  const [comments, setComments] = useState<Comment[]>(initialComments)
   const [newComment, setNewComment] = useState("")
   const [selectedSupport, setSelectedSupport] = useState<string>(items[0]?.id || "")
 
-  const handleSubmit = () => {
-    if (!newComment.trim() || newComment.length > 100) return
-
-    const comment: Comment = {
-      id: Date.now().toString(),
-      nickname: generateRandomNickname(),
-      content: newComment,
-      supportedItem: items.find((item) => item.id === selectedSupport)?.name || "",
-      likes: 0,
-      createdAt: "방금 전",
-    }
-
-    setComments([comment, ...comments])
-    setNewComment("")
+  // Update comments when initialComments changes (e.g. after revalidation)
+  // useEffect(() => {
+  //   setComments(initialComments)
+  // }, [initialComments])
+  // Actually, we might want to just use initialComments directly if we trust the parent to update it.
+  // But for optimistic updates, local state is better.
+  // Let's sync them.
+  if (initialComments !== comments && initialComments.length > comments.length) {
+      // Simple check to see if we got new data from server
+      setComments(initialComments)
   }
 
-  const handleLike = (commentId: string) => {
-    setComments(
-      comments.map((comment) => (comment.id === commentId ? { ...comment, likes: comment.likes + 1 } : comment)),
-    )
+  const handleSubmit = async () => {
+    if (!newComment.trim() || newComment.length > 100) return
+
+    // Optimistic update
+    const tempId = Date.now().toString()
+    const optimisticComment: Comment = {
+      id: tempId,
+      topic_id: topicId,
+      nickname: "나 (작성중)",
+      content: newComment,
+      created_at: new Date().toISOString(),
+    }
+
+    setComments([optimisticComment, ...comments])
+    setNewComment("")
+
+    const result = await postCommentAction(topicId, newComment)
+    
+    if (result.success) {
+      router.refresh() // Refresh to get the real comment with generated nickname
+    } else {
+      // Revert if failed
+      setComments(comments.filter(c => c.id !== tempId))
+      alert("댓글 작성에 실패했습니다.")
+    }
   }
 
   return (
@@ -132,28 +102,38 @@ export function CommentsDrawer({ isOpen, onClose, topicTitle, items }: CommentsD
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <div className="font-bold text-sm">{comment.nickname}</div>
-                    <div className="text-xs text-muted-foreground">{comment.createdAt}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(comment.created_at).toLocaleString()}
+                    </div>
                   </div>
-                  <div className="bg-secondary text-secondary-foreground px-2 py-1 text-xs border-2 border-black">
+                  {/* Supported item display - if we stored it. For now, we don't store supported item in DB schema, so omitting or mocking */}
+                  {/* <div className="bg-secondary text-secondary-foreground px-2 py-1 text-xs border-2 border-black">
                     {comment.supportedItem}
-                  </div>
+                  </div> */}
                 </div>
                 <p className="mb-3 text-sm leading-relaxed">{comment.content}</p>
-                <button
+                {/* Likes are not in DB yet, so omitting */}
+                {/* <button
                   onClick={() => handleLike(comment.id)}
                   className="flex items-center gap-1 text-sm hover:text-accent transition-colors"
                 >
                   <Heart className="w-4 h-4" />
                   <span>{comment.likes}</span>
-                </button>
+                </button> */}
               </NeoCard>
             ))}
+            {comments.length === 0 && (
+                <div className="text-center text-muted-foreground py-8">
+                    첫 번째 댓글을 남겨보세요!
+                </div>
+            )}
           </div>
 
           {/* Input Area */}
           <div className="border-t-3 border-black p-4 bg-card">
+            {/* Supported item selection - currently visual only as DB doesn't store it yet */}
             <div className="mb-3">
-              <label className="text-xs font-bold mb-2 block">지지하는 후보</label>
+              <label className="text-xs font-bold mb-2 block">지지하는 후보 (투표 반영 X)</label>
               <div className="flex gap-2 flex-wrap">
                 {items.map((item) => (
                   <button

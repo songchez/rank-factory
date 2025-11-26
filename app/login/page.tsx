@@ -1,4 +1,5 @@
 import { AuthButtons } from "@/components/auth-buttons"
+import { LoginForm } from "@/components/login-form"
 import { NeoCard } from "@/components/neo-card"
 
 export default function LoginPage() {
@@ -12,6 +13,17 @@ export default function LoginPage() {
           </div>
 
           <div className="w-full h-px bg-black/10" />
+
+          <LoginForm />
+          
+          <div className="relative w-full">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-black/10" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+            </div>
+          </div>
 
           <AuthButtons />
 
