@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function voteAction(winnerId: string, loserId: string) {
@@ -124,4 +124,137 @@ export async function createItemAction(topicId: string, name: string, imageUrl: 
   revalidatePath(`/ranking/${topicId}`);
   revalidatePath("/admin");
   return { success: true };
+}
+
+export async function updateItemAction(itemId: string, name: string, imageUrl: string) {
+  // Use admin client to bypass RLS if service role key is available
+  const supabase = await createAdminClient();
+
+  const { error } = await supabase
+    .from("ranking_items")
+    .update({
+      name,
+      image_url: imageUrl,
+    })
+    .eq("id", itemId);
+
+  if (error) {
+    console.error("Error updating item:", error);
+    return { success: false, error: "Failed to update item" };
+  }
+
+  // We need to know the topic_id to revalidate properly, but for now we can revalidate broadly or fetch it first.
+  // Fetching topic_id is safer.
+  const { data: item } = await supabase.from("ranking_items").select("topic_id").eq("id", itemId).single();
+  
+  if (item) {
+    revalidatePath(`/battle/${item.topic_id}`);
+    revalidatePath(`/ranking/${item.topic_id}`);
+  }
+  revalidatePath("/admin");
+  
+  return { success: true };
+}
+
+export async function deleteItemAction(itemId: string) {
+  console.log("deleteItemAction called for:", itemId);
+  // Use admin client to bypass RLS if service role key is available
+  const supabase = await createAdminClient();
+
+  // Get topic_id before deleting for revalidation
+  const { data: item, error: fetchError } = await supabase.from("ranking_items").select("topic_id").eq("id", itemId).single();
+  
+  if (fetchError) {
+    console.log("Error fetching item before delete:", fetchError);
+  } else {
+    console.log("Item found before delete:", item);
+  }
+
+  const { error, count } = await supabase.from("ranking_items").delete({ count: "exact" }).eq("id", itemId);
+
+  console.log("Delete count:", count);
+
+  if (error) {
+    console.error("Error deleting item:", error);
+    return { success: false, error: "Failed to delete item: " + error.message };
+  }
+
+  if (count === 0) {
+    console.warn("No items deleted. Possible RLS issue or item not found.");
+    // Check if we are using the service role key
+    const isServiceRole = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!isServiceRole) {
+      return { 
+        success: false, 
+        error: "Deletion failed. Please add SUPABASE_SERVICE_ROLE_KEY to your .env.local file to enable admin deletion." 
+      };
+    }
+    return { success: false, error: "Item not found or permission denied (RLS)." };
+  }
+
+  if (item) {
+    revalidatePath(`/battle/${item.topic_id}`);
+    revalidatePath(`/ranking/${item.topic_id}`);
+  }
+  revalidatePath("/admin");
+
+  return { success: true };
+}
+
+import { generateTopicContent, generateImage } from "@/lib/ai";
+
+export async function generateTopicWithAIAction(prompt: string) {
+  const supabase = await createClient();
+
+  try {
+    // 1. Generate Content
+    const content = await generateTopicContent(prompt);
+
+    // 2. Create Topic
+    const { data: topic, error: topicError } = await supabase.from("ranking_topics").insert({
+      title: content.title,
+      category: content.category,
+      view_type: "BATTLE",
+    }).select().single();
+
+    if (topicError || !topic) {
+      throw new Error("Failed to create topic: " + topicError?.message);
+    }
+
+    // 3. Generate Images and Create Items (Parallel)
+    // We limit concurrency to avoid hitting rate limits if necessary, but Promise.all is fine for 8 items usually.
+    const itemPromises = content.items.map(async (itemName) => {
+      let imageUrl = "https://placehold.co/400x400?text=" + encodeURIComponent(itemName);
+      try {
+        // Try to generate image
+        // The generateImage function in lib/ai.ts handles the API key check
+        imageUrl = await generateImage(itemName);
+      } catch (e) {
+        console.error(`Failed to generate image for ${itemName}:`, e);
+      }
+
+      return {
+        topic_id: topic.id,
+        name: itemName,
+        image_url: imageUrl,
+        elo_score: 1200,
+      };
+    });
+
+    const itemsToInsert = await Promise.all(itemPromises);
+
+    const { error: itemsError } = await supabase.from("ranking_items").insert(itemsToInsert);
+
+    if (itemsError) {
+      throw new Error("Failed to create items: " + itemsError.message);
+    }
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { success: true, topicId: topic.id };
+
+  } catch (error: any) {
+    console.error("AI Generation Error:", error);
+    return { success: false, error: error.message };
+  }
 }

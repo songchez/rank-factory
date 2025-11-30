@@ -42,8 +42,8 @@ export function TopicList({ initialTopics, total }: TopicListProps) {
                 </span>
                 <h3 className="font-bold text-lg">{topic.title}</h3>
               </div>
-              <p className="text-sm text-muted-foreground">
-                항목 {topic.items.length}개 • {new Date(topic.createdAt).toLocaleDateString()}
+              <p className="text-sm text-gray-600">
+                항목 {topic.items.length}개 • {new Date(topic.createdAt).toISOString().split('T')[0]}
               </p>
             </div>
             <Link href={`/admin/topics/${topic.id}`}>

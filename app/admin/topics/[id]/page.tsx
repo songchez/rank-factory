@@ -28,7 +28,7 @@ export default async function TopicDetailPage({ params }: TopicDetailPageProps) 
       <Header />
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <Link href="/admin">
-          <NeoButton variant="outline" className="mb-4 pl-0 gap-2">
+          <NeoButton variant="outline" className="mb-4 gap-2 w-48 flex items-center">
             <ArrowLeft className="w-4 h-4" /> 목록으로 돌아가기
           </NeoButton>
         </Link>

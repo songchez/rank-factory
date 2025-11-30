@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 import { type ButtonHTMLAttributes, forwardRef } from "react"
 
 interface NeoButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "accent" | "outline"
+  variant?: "primary" | "secondary" | "accent" | "outline" | "destructive"
   size?: "sm" | "md" | "lg"
 }
 
@@ -20,6 +20,8 @@ const NeoButton = forwardRef<HTMLButtonElement, NeoButtonProps>(
         "bg-accent text-accent-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]",
       outline:
         "bg-background text-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]",
+      destructive:
+        "bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]",
     }
 
     const sizes = {
