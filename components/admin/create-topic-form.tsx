@@ -6,11 +6,13 @@ import { NeoButton } from "@/components/neo-button";
 import { NeoCard } from "@/components/neo-card";
 import { Loader2, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { type TopicMode } from "@/lib/types";
 
 export function CreateTopicForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("General");
+  const [mode, setMode] = useState<TopicMode>("A");
   const [isLoading, setIsLoading] = useState(false);
 
   // AI State
@@ -22,7 +24,7 @@ export function CreateTopicForm() {
     if (!title.trim()) return;
 
     setIsLoading(true);
-    const result = await createTopicAction(title, category);
+    const result = await createTopicAction(title, category, mode);
     setIsLoading(false);
 
     if (result.success) {
@@ -39,7 +41,7 @@ export function CreateTopicForm() {
     if (!aiPrompt.trim()) return;
 
     setIsLoading(true);
-    const result = await generateTopicWithAIAction(aiPrompt);
+    const result = await generateTopicWithAIAction(aiPrompt, mode);
     setIsLoading(false);
 
     if (result.success) {
@@ -99,6 +101,29 @@ export function CreateTopicForm() {
                 <option value="Entertain">연예</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-bold mb-2">모드 선택</label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { code: "A", label: "배틀형 (VS)", desc: "1:1 투표 · ELO" },
+                  { code: "B", label: "진단형 (Test)", desc: "문항 점수 · 백분위" },
+                  { code: "C", label: "티어형 (Tier)", desc: "드래그 & 드롭" },
+                  { code: "D", label: "팩트형 (List)", desc: "데이터 리스트" },
+                ].map((option) => (
+                  <button
+                    key={option.code}
+                    type="button"
+                    onClick={() => setMode(option.code as TopicMode)}
+                    className={`text-left border-2 border-black p-3 transition-all ${
+                      mode === option.code ? "bg-primary/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "bg-white hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="font-heading text-lg">{option.label}</div>
+                    <div className="text-xs text-muted-foreground">{option.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
             <NeoButton type="submit" disabled={isLoading} className="w-full">
               {isLoading ? <Loader2 className="animate-spin" /> : "생성하기"}
             </NeoButton>
@@ -123,6 +148,26 @@ export function CreateTopicForm() {
                 placeholder="예: 한국에서 가장 인기 있는 라면 TOP 10을 만들어줘"
                 required
               />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { code: "A", label: "배틀형 (VS)", desc: "VS 모드 · ELO" },
+                { code: "B", label: "진단형 (Test)", desc: "문항 점수 · 백분위" },
+                { code: "C", label: "티어형 (Tier)", desc: "드래그 & 드롭" },
+                { code: "D", label: "팩트형 (List)", desc: "리스트 뷰" },
+              ].map((option) => (
+                <button
+                  key={option.code}
+                  type="button"
+                  onClick={() => setMode(option.code as TopicMode)}
+                  className={`text-left border-2 border-black p-3 transition-all ${
+                    mode === option.code ? "bg-primary/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "bg-white hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="font-heading text-lg">{option.label}</div>
+                  <div className="text-xs text-muted-foreground">{option.desc}</div>
+                </button>
+              ))}
             </div>
             <NeoButton type="submit" disabled={isLoading} className="w-full bg-primary text-black hover:bg-primary/90">
               {isLoading ? (

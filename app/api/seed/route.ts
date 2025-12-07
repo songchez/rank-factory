@@ -20,6 +20,7 @@ export async function GET() {
         .insert({
           title: topic.title,
           category: topic.category,
+          mode: (topic as any).mode ?? "A",
           view_type: topic.viewType,
           created_at: topic.createdAt,
         })

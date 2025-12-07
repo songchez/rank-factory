@@ -14,7 +14,8 @@ export interface RankingTopic {
   id: string
   title: string
   category: string
-  viewType: "BATTLE" | "FACT" | "HELL"
+  viewType: "BATTLE" | "FACT" | "HELL" | "TEST" | "TIER"
+  mode?: "A" | "B" | "C" | "D"
   createdAt: string
   items: RankingItem[]
 }

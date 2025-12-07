@@ -6,6 +6,7 @@ import { RankingTopic } from "@/lib/types";
 import { NeoCard } from "@/components/neo-card";
 import { NeoButton } from "@/components/neo-button";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { getModeLabel } from "@/lib/topics";
 
 interface TopicListProps {
   initialTopics: RankingTopic[];
@@ -36,9 +37,12 @@ export function TopicList({ initialTopics, total }: TopicListProps) {
         {initialTopics.map((topic) => (
           <NeoCard key={topic.id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-bold bg-primary px-2 py-0.5 border border-black rounded-full">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="text-[11px] font-bold bg-primary px-2 py-0.5 border border-black rounded-full">
                   {topic.category}
+                </span>
+                <span className="text-[11px] font-bold bg-white px-2 py-0.5 border border-black rounded-full">
+                  {getModeLabel(topic.mode)}
                 </span>
                 <h3 className="font-bold text-lg">{topic.title}</h3>
               </div>

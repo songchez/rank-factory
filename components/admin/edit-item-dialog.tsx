@@ -24,6 +24,8 @@ export function EditItemDialog({ item, open, onOpenChange }: EditItemDialogProps
   const router = useRouter();
   const [name, setName] = useState(item.name);
   const [imageUrl, setImageUrl] = useState(item.imageUrl || "");
+  const [description, setDescription] = useState(item.description || "");
+  const [rankOrder, setRankOrder] = useState<number | "">(item.rankOrder ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +33,13 @@ export function EditItemDialog({ item, open, onOpenChange }: EditItemDialogProps
     if (!name.trim()) return;
 
     setIsSubmitting(true);
-    const result = await updateItemAction(item.id, name, imageUrl);
+    const result = await updateItemAction(
+      item.id,
+      name,
+      imageUrl,
+      description,
+      typeof rankOrder === "number" ? rankOrder : undefined
+    );
     setIsSubmitting(false);
 
     if (result.success) {
@@ -68,6 +76,26 @@ export function EditItemDialog({ item, open, onOpenChange }: EditItemDialogProps
             <ImageUpload
               onUploadComplete={setImageUrl}
               defaultImage={imageUrl}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-bold">설명</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-primary min-h-[90px]"
+              placeholder="항목에 대한 설명을 입력하세요"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-bold">순위 (팩트형)</label>
+            <input
+              type="number"
+              value={rankOrder}
+              onChange={(e) => setRankOrder(e.target.value === "" ? "" : Number(e.target.value))}
+              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="예: 1"
+              min={0}
             />
           </div>
           <DialogFooter>

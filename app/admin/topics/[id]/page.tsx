@@ -5,6 +5,8 @@ import { NeoButton } from "@/components/neo-button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getModeLabel } from "@/lib/topics";
+import { FactContentEditor } from "@/components/admin/fact-content-editor";
 
 interface TopicDetailPageProps {
   params: {
@@ -34,16 +36,26 @@ export default async function TopicDetailPage({ params }: TopicDetailPageProps) 
         </Link>
         
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
             <span className="text-sm font-bold bg-primary px-3 py-1 border border-black rounded-full">
               {topic.category}
+            </span>
+            <span className="text-sm font-bold bg-white px-3 py-1 border border-black rounded-full">
+              {getModeLabel(topic.mode)}
             </span>
             <h1 className="font-heading text-4xl">{topic.title}</h1>
           </div>
           <p className="text-muted-foreground">ID: {topic.id}</p>
         </div>
 
-        <ItemManager topicId={topic.id} initialItems={items} />
+        <div className="space-y-8">
+          <ItemManager topicId={topic.id} initialItems={items} topicMode={topic.mode} />
+          <FactContentEditor
+            topicId={topic.id}
+            initialMarkdown={topic.contentMarkdown || ""}
+            enabled={topic.mode === "D"}
+          />
+        </div>
       </main>
     </div>
   );

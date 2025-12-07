@@ -20,6 +20,9 @@ export async function Header() {
           <Link href="/" className="font-bold hover:text-primary transition-colors">
             홈
           </Link>
+          <Link href="/games" className="font-bold hover:text-primary transition-colors">
+            순위 게임
+          </Link>
           <Link href="/rankings" className="font-bold hover:text-primary transition-colors">
             랭킹
           </Link>

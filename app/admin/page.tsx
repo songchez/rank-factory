@@ -15,7 +15,9 @@ export default async function AdminPage() {
     .map((e) => e.trim())
     .filter((e) => e.length > 0);
 
-  if (!user || !user.email || !adminEmails.includes(user.email)) {
+  const isOpenAdmin = adminEmails.length === 0;
+
+  if (!isOpenAdmin && (!user || !user.email || !adminEmails.includes(user.email))) {
     redirect("/login");
   }
 
@@ -29,7 +31,9 @@ export default async function AdminPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="font-heading text-4xl">관리자 대시보드</h1>
           <NeoCard className="bg-secondary text-white px-4 py-2">
-            <span className="text-sm font-bold">{user.email}</span>
+            <span className="text-sm font-bold">
+              {user?.email || (isOpenAdmin ? "게스트 (ADMIN_EMAIL 미설정)" : "로그인 필요")}
+            </span>
           </NeoCard>
         </div>
         

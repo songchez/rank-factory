@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MessageCircle, Share2 } from "lucide-react";
 import { RankingTopic, Comment } from "@/lib/types";
+import { getModePlayPath } from "@/lib/topics";
 
 interface RankingClientProps {
   topic: RankingTopic;
@@ -43,8 +44,8 @@ export default function RankingClient({ topic, initialComments }: RankingClientP
             {topic.title}
           </h1>
           <p className="text-lg">최종 랭킹 결과</p>
-          <div className="mt-4 flex items-center justify-center gap-4">
-            <Link href={`/battle/${topic.id}`}>
+        <div className="mt-4 flex items-center justify-center gap-4">
+            <Link href={getModePlayPath(topic)}>
               <NeoButton variant="primary">다시 투표하기</NeoButton>
             </Link>
             <NeoButton

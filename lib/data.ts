@@ -8,7 +8,7 @@ export async function getTopics(page = 1, limit = 10): Promise<{ topics: Ranking
 
   const { data: topics, error, count } = await supabase
     .from("ranking_topics")
-    .select("*, items:ranking_items(*)", { count: "exact" })
+    .select("*, items:ranking_items(*), post:topic_posts(body_md, body_json)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -17,23 +17,38 @@ export async function getTopics(page = 1, limit = 10): Promise<{ topics: Ranking
     return { topics: [], total: 0 };
   }
 
-  const formattedTopics = topics.map((topic: any) => ({
-    id: topic.id,
-    title: topic.title,
-    category: topic.category,
-    viewType: topic.view_type,
-    createdAt: topic.created_at,
-    items: topic.items.map((item: any) => ({
-      id: item.id,
-      topicId: item.topic_id,
-      name: item.name,
-      imageUrl: item.image_url,
-      eloScore: item.elo_score,
-      winCount: item.win_count,
-      lossCount: item.loss_count,
-      matchCount: item.match_count,
-    })),
-  }));
+  const formattedTopics = topics.map((topic: any) => {
+    const mode = topic.mode || (topic.view_type === "FACT" ? "D" : "A");
+    const viewType =
+      topic.view_type ||
+      (mode === "B" ? "TEST" : mode === "C" ? "TIER" : mode === "D" ? "FACT" : "BATTLE");
+
+    return {
+      id: topic.id,
+      title: topic.title,
+      category: topic.category,
+      viewType,
+      mode,
+      meta: topic.meta,
+      contentMarkdown: topic.post?.body_md,
+      contentJson: topic.post?.body_json,
+      createdAt: topic.created_at,
+      items: topic.items.map((item: any) => ({
+        id: item.id,
+        topicId: item.topic_id,
+        name: item.name,
+        imageUrl: item.image_url,
+        description: item.description,
+        externalUrl: item.external_url,
+        meta: item.meta,
+        rankOrder: item.rank_order,
+        eloScore: item.elo_score,
+        winCount: item.win_count,
+        lossCount: item.loss_count,
+        matchCount: item.match_count,
+      })),
+    };
+  });
 
   return { topics: formattedTopics, total: count || 0 };
 }
@@ -60,6 +75,10 @@ export async function getTopicItems(topicId: string, page = 1, limit = 20): Prom
     topicId: item.topic_id,
     name: item.name,
     imageUrl: item.image_url,
+    description: item.description,
+    externalUrl: item.external_url,
+    meta: item.meta,
+    rankOrder: item.rank_order,
     eloScore: item.elo_score,
     winCount: item.win_count,
     lossCount: item.loss_count,
@@ -73,7 +92,7 @@ export async function getTopicById(id: string): Promise<RankingTopic | null> {
   const supabase = await createClient();
   const { data: topic, error } = await supabase
     .from("ranking_topics")
-    .select("*, items:ranking_items(*)")
+    .select("*, items:ranking_items(*), post:topic_posts(body_md, body_json)")
     .eq("id", id)
     .single();
 
@@ -82,17 +101,29 @@ export async function getTopicById(id: string): Promise<RankingTopic | null> {
     return null;
   }
 
+  const mode = topic.mode || (topic.view_type === "FACT" ? "D" : "A");
+  const viewType =
+    topic.view_type || (mode === "B" ? "TEST" : mode === "C" ? "TIER" : mode === "D" ? "FACT" : "BATTLE");
+
   return {
     id: topic.id,
     title: topic.title,
     category: topic.category,
-    viewType: topic.view_type,
+    viewType,
+    mode,
+    meta: topic.meta,
+    contentMarkdown: topic.post?.body_md,
+    contentJson: topic.post?.body_json,
     createdAt: topic.created_at,
     items: topic.items.map((item: any) => ({
       id: item.id,
       topicId: item.topic_id,
       name: item.name,
       imageUrl: item.image_url,
+      description: item.description,
+      externalUrl: item.external_url,
+      meta: item.meta,
+      rankOrder: item.rank_order,
       eloScore: item.elo_score,
       winCount: item.win_count,
       lossCount: item.loss_count,

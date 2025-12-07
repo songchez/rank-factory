@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { type TopicMode } from "@/lib/types";
 
 export async function voteAction(winnerId: string, loserId: string) {
   const supabase = await createClient();
@@ -86,13 +87,21 @@ export async function postCommentAction(topicId: string, content: string) {
   return { success: true };
 }
 
-export async function createTopicAction(title: string, category: string) {
+const modeToViewType: Record<TopicMode, "BATTLE" | "FACT" | "HELL" | "TEST" | "TIER"> = {
+  A: "BATTLE",
+  B: "TEST",
+  C: "TIER",
+  D: "FACT",
+};
+
+export async function createTopicAction(title: string, category: string, mode: TopicMode = "A") {
   const supabase = await createClient();
   
   const { data, error } = await supabase.from("ranking_topics").insert({
     title,
     category,
-    view_type: "BATTLE",
+    mode,
+    view_type: modeToViewType[mode],
   }).select().single();
 
   if (error) {
@@ -105,13 +114,21 @@ export async function createTopicAction(title: string, category: string) {
   return { success: true, topic: data };
 }
 
-export async function createItemAction(topicId: string, name: string, imageUrl: string) {
+export async function createItemAction(
+  topicId: string,
+  name: string,
+  imageUrl: string,
+  description?: string,
+  rankOrder?: number
+) {
   const supabase = await createClient();
 
   const { error } = await supabase.from("ranking_items").insert({
     topic_id: topicId,
     name,
     image_url: imageUrl,
+    description,
+    rank_order: rankOrder ?? 0,
     elo_score: 1200,
   });
 
@@ -126,7 +143,13 @@ export async function createItemAction(topicId: string, name: string, imageUrl: 
   return { success: true };
 }
 
-export async function updateItemAction(itemId: string, name: string, imageUrl: string) {
+export async function updateItemAction(
+  itemId: string,
+  name: string,
+  imageUrl: string,
+  description?: string,
+  rankOrder?: number
+) {
   // Use admin client to bypass RLS if service role key is available
   const supabase = await createAdminClient();
 
@@ -135,6 +158,8 @@ export async function updateItemAction(itemId: string, name: string, imageUrl: s
     .update({
       name,
       image_url: imageUrl,
+      description,
+      rank_order: rankOrder ?? 0,
     })
     .eq("id", itemId);
 
@@ -201,9 +226,34 @@ export async function deleteItemAction(itemId: string) {
   return { success: true };
 }
 
+export async function updateItemOrdersAction(
+  topicId: string,
+  orders: { itemId: string; rankOrder: number }[]
+) {
+  const supabase = await createAdminClient();
+
+  try {
+    await Promise.all(
+      orders.map((order) =>
+        supabase
+          .from("ranking_items")
+          .update({ rank_order: order.rankOrder })
+          .eq("id", order.itemId)
+      )
+    );
+  } catch (error) {
+    console.error("Error updating rank order:", error);
+    return { success: false, error: "순위 저장 실패" };
+  }
+
+  revalidatePath(`/fact/${topicId}`);
+  revalidatePath("/admin");
+  return { success: true };
+}
+
 import { generateTopicContent, generateImage } from "@/lib/ai";
 
-export async function generateTopicWithAIAction(prompt: string) {
+export async function generateTopicWithAIAction(prompt: string, mode: TopicMode = "A") {
   const supabase = await createClient();
 
   try {
@@ -214,7 +264,8 @@ export async function generateTopicWithAIAction(prompt: string) {
     const { data: topic, error: topicError } = await supabase.from("ranking_topics").insert({
       title: content.title,
       category: content.category,
-      view_type: "BATTLE",
+      mode,
+      view_type: modeToViewType[mode],
     }).select().single();
 
     if (topicError || !topic) {
@@ -257,4 +308,153 @@ export async function generateTopicWithAIAction(prompt: string) {
     console.error("AI Generation Error:", error);
     return { success: false, error: error.message };
   }
+}
+
+export async function submitQuizAction(
+  topicId: string,
+  score: number,
+  detail?: Record<string, unknown>
+) {
+  const supabase = await createClient();
+  let percentile = Math.max(0, Math.min(100, Math.round(score)));
+
+  try {
+    const { data: existing, error: fetchError } = await supabase
+      .from("quiz_submissions")
+      .select("score")
+      .eq("topic_id", topicId);
+
+    if (fetchError) {
+      console.error("quiz_submissions fetch error:", fetchError);
+    }
+
+    if (existing && existing.length > 0) {
+      const lowerOrEqual = existing.filter((row) => Number(row.score) <= score).length + 1;
+      percentile = Math.round((lowerOrEqual / (existing.length + 1)) * 100);
+    } else {
+      percentile = 100;
+    }
+
+    const { error: insertError } = await supabase.from("quiz_submissions").insert({
+      topic_id: topicId,
+      score,
+      percentile,
+      detail: detail || {},
+    });
+
+    if (insertError) {
+      console.error("quiz_submissions insert error:", insertError);
+    }
+  } catch (error) {
+    console.error("Error recording quiz submission:", error);
+  }
+
+  revalidatePath(`/test/${topicId}`);
+  return { success: true, percentile };
+}
+
+export async function saveTierPlacementsAction(
+  topicId: string,
+  placements: { itemId: string; tier: "S" | "A" | "B" | "C" | "F" }[],
+  sessionId?: string
+) {
+  const supabase = await createClient();
+  const session = sessionId || "anon";
+
+  try {
+    const { error: deleteError } = await supabase
+      .from("tier_placements")
+      .delete()
+      .eq("topic_id", topicId)
+      .eq("session_id", session);
+
+    if (deleteError) {
+      console.error("tier_placements delete error:", deleteError);
+    }
+
+    if (placements.length > 0) {
+      const { error: insertError } = await supabase.from("tier_placements").insert(
+        placements.map((placement) => ({
+          topic_id: topicId,
+          item_id: placement.itemId,
+          tier: placement.tier,
+          session_id: session,
+        }))
+      );
+
+      if (insertError) {
+        console.error("tier_placements insert error:", insertError);
+        return { success: false, error: "티어 저장 실패" };
+      }
+    }
+  } catch (error) {
+    console.error("Error saving tier placements:", error);
+    return { success: false, error: "티어 저장 실패" };
+  }
+
+  revalidatePath(`/tier/${topicId}`);
+  return { success: true };
+}
+
+export async function saveTopicContentAction(
+  topicId: string,
+  bodyMarkdown: string,
+  bodyJson?: Record<string, unknown> | null
+) {
+  const supabase = await createAdminClient();
+  try {
+    const { error } = await supabase
+      .from("topic_posts")
+      .upsert(
+        {
+          topic_id: topicId,
+          body_md: bodyMarkdown,
+          body_json: bodyJson ?? null,
+        },
+        { onConflict: "topic_id" }
+      );
+
+    if (error) {
+      console.error("Error upserting topic_posts:", error);
+      return { success: false, error: "저장 실패" };
+    }
+  } catch (e) {
+    console.error("Unexpected error saving topic content:", e);
+    return { success: false, error: "저장 실패" };
+  }
+
+  revalidatePath(`/fact/${topicId}`);
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function submitGameScoreAction(
+  gameId: string,
+  score: number,
+  sessionId?: string,
+  userId?: string,
+  meta?: Record<string, unknown>
+) {
+  const supabase = await createClient();
+
+  try {
+    const { error } = await supabase.from("game_scores").insert({
+      game_id: gameId,
+      session_id: sessionId || "anon",
+      user_id: userId || null,
+      score,
+      meta: meta || {},
+    });
+
+    if (error) {
+      console.error("submitGameScoreAction insert error:", error);
+      return { success: false, error: "점수 저장 실패" };
+    }
+  } catch (e) {
+    console.error("submitGameScoreAction unexpected error:", e);
+    return { success: false, error: "점수 저장 실패" };
+  }
+
+  revalidatePath(`/games/${gameId}`);
+  return { success: true };
 }

@@ -1,5 +1,7 @@
 import { getTopicById, getComments } from "@/lib/data";
 import RankingClient from "@/components/ranking-client";
+import { getModePlayPath } from "@/lib/topics";
+import { redirect } from "next/navigation";
 
 export const runtime = "edge";
 
@@ -14,6 +16,10 @@ export default async function RankingPage({ params }: { params: Promise<{ id: st
         <p className="font-heading text-2xl">주제를 찾을 수 없습니다</p>
       </div>
     );
+  }
+
+  if (topic.mode !== "A") {
+    redirect(getModePlayPath(topic));
   }
 
   return <RankingClient topic={topic} initialComments={comments} />;

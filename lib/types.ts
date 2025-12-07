@@ -1,8 +1,14 @@
+export type TopicMode = "A" | "B" | "C" | "D";
+
 export interface RankingItem {
   id: string;
   topicId: string;
   name: string;
   imageUrl: string;
+  description?: string;
+  externalUrl?: string;
+  meta?: Record<string, unknown>;
+  rankOrder?: number;
   eloScore: number;
   winCount: number;
   lossCount: number;
@@ -15,7 +21,11 @@ export interface RankingTopic {
   id: string;
   title: string;
   category: string;
-  viewType: "BATTLE" | "FACT" | "HELL";
+  viewType: "BATTLE" | "FACT" | "HELL" | "TEST" | "TIER";
+  mode: TopicMode;
+  meta?: Record<string, unknown>;
+  contentMarkdown?: string;
+  contentJson?: Record<string, unknown>;
   createdAt: string;
   items: RankingItem[];
 }
