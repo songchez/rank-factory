@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "types": ["bun-types"],
+    "paths": {
+      "@server/*": ["./server/*"],
+      "@shared/*": ["./shared/*"]
+    }
+  },
+  "include": ["server/**/*", "shared/**/*", "functions/**/*"]
+}
