@@ -33,9 +33,13 @@ export function createClient(c: Context) {
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
+          const sameSite =
+            typeof options?.sameSite === 'string'
+              ? options.sameSite
+              : 'Lax';
           setCookie(c, name, value, {
             ...options,
-            sameSite: options?.sameSite ?? 'Lax',
+            sameSite,
             path: '/',
           });
         });

@@ -2,6 +2,20 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
+type NavItem = {
+  path: string;
+  label: string;
+  icon: string;
+  mode: string | null;
+};
+
+type NavAction = {
+  action: 'logout';
+  label: string;
+  icon: string;
+  mode: null;
+};
+
 export function MobileNav() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -64,7 +78,7 @@ export function MobileNav() {
     };
   }, [touchStart, touchEnd, currentMode]);
 
-  const navItems = [
+  const navItems: Array<NavItem | NavAction> = [
     { path: '/?mode=A', label: '배틀', icon: '⚔️', mode: 'A' },
     { path: '/?mode=B', label: '테스트', icon: '📝', mode: 'B' },
     { path: '/?mode=C', label: '티어', icon: '🏆', mode: 'C' },
@@ -79,7 +93,7 @@ export function MobileNav() {
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t-3 border-black">
       <div className="grid grid-cols-6 gap-0">
         {navItems.map((item, idx) =>
-          item.action === 'logout' ? (
+          ('action' in item && item.action === 'logout') ? (
             <button
               key="logout"
               onClick={() => {
@@ -91,7 +105,7 @@ export function MobileNav() {
               <span className="text-lg mb-0.5">{item.icon}</span>
               <span className="text-[10px] font-bold">{item.label}</span>
             </button>
-          ) : (
+          ) : 'path' in item ? (
             <Link
               key={item.path}
               to={item.path}
@@ -108,7 +122,7 @@ export function MobileNav() {
                 {item.label}
               </span>
             </Link>
-          )
+          ) : null
         )}
       </div>
     </nav>

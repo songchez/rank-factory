@@ -18,8 +18,9 @@ const ranking = new Hono();
 ranking.get('/:topicId/items', async (c) => {
   try {
     const seeded = await ensureSeeded(c.env);
-    if (!hasSupabaseEnv(c.env) && seeded.offlineData) {
-      const offline = seeded.offlineData.find((t) => t.id === c.req.param('topicId'));
+    const offlineData = seeded.offlineData ?? [];
+    if (!hasSupabaseEnv(c.env) && offlineData.length > 0) {
+      const offline = offlineData.find((t) => t.id === c.req.param('topicId'));
       if (!offline) return c.json({ success: false, error: 'Not found' }, 404);
       return c.json({ success: true, data: offline.items });
     }
@@ -45,8 +46,9 @@ ranking.get('/:topicId/items', async (c) => {
 ranking.get('/:topicId/pair', async (c) => {
   try {
     const seeded = await ensureSeeded(c.env);
-    if (!hasSupabaseEnv(c.env) && seeded.offlineData) {
-      const offline = seeded.offlineData.find((t) => t.id === c.req.param('topicId'));
+    const offlineData = seeded.offlineData ?? [];
+    if (!hasSupabaseEnv(c.env) && offlineData.length > 0) {
+      const offline = offlineData.find((t) => t.id === c.req.param('topicId'));
       if (!offline || offline.items.length < 2) {
         return c.json({ success: false, error: 'Not enough items' }, 400);
       }
@@ -82,8 +84,9 @@ ranking.get('/:topicId/pair', async (c) => {
 ranking.post('/:topicId/vote', async (c) => {
   try {
     const seeded = await ensureSeeded(c.env);
-    if (!hasSupabaseEnv(c.env) && seeded.offlineData) {
-      const offline = seeded.offlineData.find((t) => t.id === c.req.param('topicId'));
+    const offlineData = seeded.offlineData ?? [];
+    if (!hasSupabaseEnv(c.env) && offlineData.length > 0) {
+      const offline = offlineData.find((t) => t.id === c.req.param('topicId'));
       if (!offline || offline.items.length < 2) {
         return c.json({ success: false, error: 'Not enough items' }, 400);
       }

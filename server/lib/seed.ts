@@ -281,7 +281,10 @@ export async function seedAll(env: any) {
   return { topics: results };
 }
 
-export async function ensureSeeded(env: any) {
+export async function ensureSeeded(env: any): Promise<{
+  topics: { topicId?: string; status: string; title: string }[];
+  offlineData?: OfflineTopic[];
+}> {
   try {
     const supabase = createAdminClient(env);
     const { data, error } = await supabase.from('ranking_topics').select('id');

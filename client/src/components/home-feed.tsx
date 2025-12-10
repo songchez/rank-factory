@@ -5,9 +5,10 @@ import { Link, useNavigate } from "react-router-dom";
 import type { RankingTopic } from "../lib/types";
 
 function scoreTopic(topic: RankingTopic) {
+  const createdAt = topic.createdAt ? new Date(topic.createdAt) : new Date();
   const topElo = topic.items.reduce((max: number, item) => Math.max(max, item.eloScore || 0), 0);
   const matchSum = topic.items.reduce((sum: number, item) => sum + (item.matchCount || 0), 0);
-  const ageHours = Math.max(0, (Date.now() - new Date(topic.createdAt).getTime()) / (1000 * 60 * 60));
+  const ageHours = Math.max(0, (Date.now() - createdAt.getTime()) / (1000 * 60 * 60));
   const recencyBoost = Math.max(0, 72 - ageHours) * 4;
   return topElo + matchSum * 0.2 + recencyBoost;
 }
@@ -32,7 +33,8 @@ export default function HomeFeed({ topics, filterMode = "A" }: HomeFeedProps) {
     // Score and sort topics
     const scored = [...topics].map((topic) => {
       const score = scoreTopic(topic);
-      const ageHours = Math.max(0, (Date.now() - new Date(topic.createdAt).getTime()) / (1000 * 60 * 60));
+      const createdAt = topic.createdAt ? new Date(topic.createdAt) : new Date();
+      const ageHours = Math.max(0, (Date.now() - createdAt.getTime()) / (1000 * 60 * 60));
       const isFeatured = score > 500; // High score = featured
       const isNew = ageHours < 48; // Less than 48 hours = new
 
@@ -117,7 +119,7 @@ export default function HomeFeed({ topics, filterMode = "A" }: HomeFeedProps) {
                     <h2 className="font-heading text-base mb-0.5 line-clamp-2">{topic.title}</h2>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{topic.items.length}개 항목</span>
-                      <span>{new Date(topic.createdAt || '').toLocaleDateString("ko-KR", { month: 'short', day: 'numeric' })}</span>
+                      <span>{(topic.createdAt ? new Date(topic.createdAt) : new Date()).toLocaleDateString("ko-KR", { month: 'short', day: 'numeric' })}</span>
                     </div>
                   </div>
                 </div>

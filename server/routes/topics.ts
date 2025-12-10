@@ -12,14 +12,21 @@ function hasSupabaseEnv(env?: any) {
   return !!(supabaseUrl && supabaseKey);
 }
 
+type GeneratedTopic = {
+  title: string;
+  category: string;
+  items: string[];
+};
+
 const topics = new Hono();
 
 // Get all topics with items
 topics.get('/', async (c) => {
   try {
     const seeded = await ensureSeeded(c.env);
-    if (!hasSupabaseEnv(c.env) && seeded.offlineData) {
-      return c.json({ success: true, data: seeded.offlineData });
+    const offlineData = seeded.offlineData ?? [];
+    if (!hasSupabaseEnv(c.env) && offlineData.length > 0) {
+      return c.json({ success: true, data: offlineData });
     }
 
     const supabase = createClient(c);
@@ -57,8 +64,9 @@ topics.get('/', async (c) => {
 topics.get('/:id', async (c) => {
   try {
     const seeded = await ensureSeeded(c.env);
-    if (!hasSupabaseEnv(c.env) && seeded.offlineData) {
-      const found = seeded.offlineData.find((t) => t.id === c.req.param('id'));
+    const offlineData = seeded.offlineData ?? [];
+    if (!hasSupabaseEnv(c.env) && offlineData.length > 0) {
+      const found = offlineData.find((t) => t.id === c.req.param('id'));
       if (found) {
         return c.json({ success: true, data: found });
       }
@@ -124,7 +132,7 @@ topics.post('/generate', async (c) => {
 
     // Generate images for each item
     const itemsWithImages = await Promise.all(
-      generatedTopic.items.map(async (itemName) => {
+      generatedTopic.items.map(async (itemName: string) => {
         const imageUrl = await generateImage(
           `A simple, clean icon representing: ${itemName}. Minimalist style, centered composition.`,
           c.env

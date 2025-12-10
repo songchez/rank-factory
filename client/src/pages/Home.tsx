@@ -24,7 +24,7 @@ export default function Home() {
         if (res.success && res.data) {
           setTopics(res.data.map(normalizeTopic));
         } else {
-          setError(res.error || '토픽을 불러오지 못했습니다.');
+          setError('토픽을 불러오지 못했습니다.');
         }
       })
       .catch((err) => {
