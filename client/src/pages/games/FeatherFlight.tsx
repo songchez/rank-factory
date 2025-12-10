@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameLayout } from '../../components/games/game-layout';
-import { TenSecondsClient } from '../../components/games/ten-seconds-client';
+import { FeatherFlightClient } from '../../components/games/feather-flight-client';
 import { fetchLeaderboard } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 
-const GAME_ID = 'ten-seconds';
+const GAME_ID = 'feather-flight';
 
-export default function TenSeconds() {
+export default function FeatherFlight() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const locked = !user;
@@ -39,13 +39,13 @@ export default function TenSeconds() {
   const handleRestart = () => {
     if (locked) return;
     setGameStarted(true);
-    setKey(prev => prev + 1);
+    setKey((prev) => prev + 1);
   };
 
   return (
     <GameLayout
-      gameTitle="칼각 10초"
-      gameIcon="⏱️"
+      gameTitle="깃털 플라이트"
+      gameIcon="🐤"
       isGameStarted={gameStarted}
       isGameEnded={false}
       onStart={!locked ? handleStart : undefined}
@@ -67,7 +67,7 @@ export default function TenSeconds() {
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
         </div>
       ) : (
-        <TenSecondsClient
+        <FeatherFlightClient
           key={key}
           leaderboard={leaderboard}
           gameStarted={gameStarted}

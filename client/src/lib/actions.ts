@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { submitScore } from './api';
 
 export async function submitGameScoreAction(
   gameId: string,
@@ -8,17 +8,14 @@ export async function submitGameScoreAction(
   meta?: Record<string, unknown>
 ) {
   try {
-    const { error } = await supabase.from("game_scores").insert({
-      game_id: gameId,
-      session_id: sessionId || "anon",
-      user_id: userId || null,
-      score,
-      meta: meta || {},
+    const { success, error } = await submitScore(gameId, score, {
+      ...(meta || {}),
+      sessionId: sessionId ?? 'anon',
+      userId: userId ?? undefined,
     });
 
-    if (error) {
-      console.error("submitGameScoreAction insert error:", error);
-      return { success: false, error: "점수 저장 실패" };
+    if (!success) {
+      return { success: false, error: error ?? '점수 저장 실패' };
     }
   } catch (e) {
     console.error("submitGameScoreAction unexpected error:", e);

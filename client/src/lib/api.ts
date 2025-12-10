@@ -1,8 +1,11 @@
-const API_BASE = import.meta.env.PROD ? '' : 'http://localhost:8787';
+// Vite dev 서버의 프록시(/api → 127.0.0.1:8787)를 쓰기 위해 기본은 공백(동일 오리진)으로 둡니다.
+// 필요 시만 VITE_API_BASE로 덮어씁니다.
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${url}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...options?.headers,
@@ -87,5 +90,51 @@ export async function adminUpdateTopic(id: string, updates: any) {
 export async function adminDeleteTopic(id: string) {
   return fetcher<{ success: boolean }>(`/api/admin/topics/${id}`, {
     method: 'DELETE',
+  });
+}
+
+export async function runSeed() {
+  return fetcher<{ success: boolean; results: any }>('/api/seed/all', {
+    method: 'POST',
+  });
+}
+
+// Auth API
+export async function login(email: string, password: string) {
+  return fetcher<{ success: boolean; user?: any; error?: string }>('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function logout() {
+  return fetcher<{ success: boolean }>('/api/auth/logout', { method: 'POST' });
+}
+
+export async function fetchSession() {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/session`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) {
+      // 세션 없음(401)도 게스트로 간주
+      return { success: true, user: null };
+    }
+    return res.json();
+  } catch {
+    return { success: true, user: null };
+  }
+}
+
+// Games API
+export async function fetchLeaderboard(gameId: string, limit = 20) {
+  return fetcher<{ success: boolean; data: any[] }>(`/api/games/${gameId}/leaderboard?limit=${limit}`);
+}
+
+export async function submitScore(gameId: string, score: number, meta?: Record<string, unknown>) {
+  return fetcher<{ success: boolean; data?: any; error?: string }>(`/api/games/${gameId}/score`, {
+    method: 'POST',
+    body: JSON.stringify({ score, meta }),
   });
 }

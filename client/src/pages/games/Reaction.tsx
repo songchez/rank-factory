@@ -1,26 +1,26 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GameLayout } from '../../components/games/game-layout';
 import { ReactionClient } from '../../components/games/reaction-client';
-import { supabase } from '../../lib/supabase';
+import { fetchLeaderboard } from '../../lib/api';
+import { useAuth } from '../../hooks/useAuth';
 
 const GAME_ID = 'reaction';
 
 export default function Reaction() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const locked = !user;
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameEnded, setGameEnded] = useState(false);
   const [key, setKey] = useState(0);
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
+    const loadLeaderboard = async () => {
       try {
-        const { data } = await supabase
-          .from('game_scores')
-          .select('*')
-          .eq('game_id', GAME_ID)
-          .order('score', { ascending: false })
-          .limit(20);
-
+        const { data } = await fetchLeaderboard(GAME_ID, 20);
         setLeaderboard(data || []);
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
@@ -29,14 +29,19 @@ export default function Reaction() {
       }
     };
 
-    fetchLeaderboard();
+    loadLeaderboard();
   }, [key]);
 
   const handleStart = () => {
+    if (locked) return;
     setGameStarted(true);
+    setGameEnded(false);
   };
 
   const handleRestart = () => {
+    if (locked) return;
+    setGameStarted(true);
+    setGameEnded(false);
     setKey(prev => prev + 1);
   };
 
@@ -45,10 +50,21 @@ export default function Reaction() {
       gameTitle="뿅뿅 풍선터뜨리기"
       gameIcon="🎈"
       isGameStarted={gameStarted}
-      isGameEnded={false}
-      onStart={handleStart}
-      onRestart={handleRestart}
+      isGameEnded={gameEnded}
+      onStart={!locked ? handleStart : undefined}
+      onRestart={!locked ? handleRestart : undefined}
     >
+      {locked && !gameStarted && (
+        <div className="text-center text-sm text-muted-foreground mb-2 space-y-2">
+          <div>로그인 후 플레이할 수 있습니다.</div>
+          <button
+            onClick={() => navigate('/login')}
+            className="inline-flex px-3 py-1.5 border-2 border-black bg-primary shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-sm font-bold"
+          >
+            로그인하기
+          </button>
+        </div>
+      )}
       {loading ? (
         <div className="h-full flex items-center justify-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
@@ -58,6 +74,8 @@ export default function Reaction() {
           key={key}
           leaderboard={leaderboard}
           gameStarted={gameStarted}
+          onGameEnd={() => setGameEnded(true)}
+          locked={locked}
         />
       )}
     </GameLayout>

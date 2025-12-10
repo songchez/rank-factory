@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { MobileNav } from './components/mobile-nav';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -14,11 +14,19 @@ import Reaction from './pages/games/Reaction';
 import ColorMatch from './pages/games/ColorMatch';
 import Runner from './pages/games/Runner';
 import TenSeconds from './pages/games/TenSeconds';
+import FeatherFlight from './pages/games/FeatherFlight';
 
-function App() {
+function AppShell() {
+  const location = useLocation();
+  const isAdminView = location.pathname.startsWith('/admin');
+  const isGameFullScreen = location.pathname.startsWith('/games/');
+  const isBattleFullScreen = location.pathname.startsWith('/battle/');
+  const shellClass = isAdminView || isGameFullScreen || isBattleFullScreen ? 'full-shell' : 'app-shell';
+  const showMobileNav = !isAdminView && !isGameFullScreen && !isBattleFullScreen;
+
   return (
-    <BrowserRouter>
-      <div className="pb-16 md:pb-0">
+    <div className={shellClass}>
+      <div className={showMobileNav ? 'pb-16' : ''}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -34,9 +42,18 @@ function App() {
           <Route path="/games/color-match" element={<ColorMatch />} />
           <Route path="/games/runner" element={<Runner />} />
           <Route path="/games/ten-seconds" element={<TenSeconds />} />
+          <Route path="/games/feather-flight" element={<FeatherFlight />} />
         </Routes>
-        <MobileNav />
       </div>
+      {showMobileNav && <MobileNav />}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppShell />
     </BrowserRouter>
   );
 }

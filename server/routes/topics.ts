@@ -1,13 +1,27 @@
 import { Hono } from 'hono';
 import { createClient, createAdminClient } from '../lib/supabase';
 import { generateTopicContent, generateImage } from '../lib/ai';
-import type { GeneratedTopic } from '../../shared/types';
+import { ensureSeeded, buildOfflineSeed } from '../lib/seed';
+
+function hasSupabaseEnv(env?: any) {
+  const supabaseUrl = env?.SUPABASE_URL || (typeof process !== 'undefined' && process.env?.SUPABASE_URL);
+  const supabaseKey =
+    env?.SUPABASE_SERVICE_ROLE_KEY ||
+    env?.SUPABASE_PUBLISHABLE_KEY ||
+    (typeof process !== 'undefined' && (process.env?.SUPABASE_SERVICE_ROLE_KEY || process.env?.SUPABASE_PUBLISHABLE_KEY));
+  return !!(supabaseUrl && supabaseKey);
+}
 
 const topics = new Hono();
 
 // Get all topics with items
 topics.get('/', async (c) => {
   try {
+    const seeded = await ensureSeeded(c.env);
+    if (!hasSupabaseEnv(c.env) && seeded.offlineData) {
+      return c.json({ success: true, data: seeded.offlineData });
+    }
+
     const supabase = createClient(c);
 
     // Get all topics
@@ -34,13 +48,23 @@ topics.get('/', async (c) => {
 
     return c.json({ success: true, data: topicsWithItems });
   } catch (error) {
-    return c.json({ success: false, error: (error as Error).message }, 500);
+    console.error('topics.get / error', error);
+    return c.json({ success: true, data: buildOfflineSeed(), note: 'offline-seed' }, 200);
   }
 });
 
 // Get single topic with items
 topics.get('/:id', async (c) => {
   try {
+    const seeded = await ensureSeeded(c.env);
+    if (!hasSupabaseEnv(c.env) && seeded.offlineData) {
+      const found = seeded.offlineData.find((t) => t.id === c.req.param('id'));
+      if (found) {
+        return c.json({ success: true, data: found });
+      }
+      return c.json({ success: false, error: 'Topic not found' }, 404);
+    }
+
     const id = c.req.param('id');
     const supabase = createClient(c);
 

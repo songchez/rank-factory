@@ -76,6 +76,7 @@ interface TetrisClientProps {
   leaderboard: any[];
   gameStarted?: boolean;
   onGameEnd?: () => void;
+  locked?: boolean;
 }
 
 const GAME_ID = "tetris";
@@ -147,7 +148,7 @@ function clearLines(board: Cell[][]) {
   return { board: newBoard, cleared };
 }
 
-export function TetrisClient({ leaderboard, gameStarted, onGameEnd }: TetrisClientProps) {
+export function TetrisClient({ leaderboard, gameStarted, onGameEnd, locked = false }: TetrisClientProps) {
   const [board, setBoard] = useState<Cell[][]>(createEmptyBoard());
   const [piece, setPiece] = useState<Piece | null>(null);
   const [nextPiece, setNextPiece] = useState<Piece>(randomPiece());
@@ -173,7 +174,7 @@ export function TetrisClient({ leaderboard, gameStarted, onGameEnd }: TetrisClie
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (!isRunning || !piece) return;
+      if (locked || !isRunning || !piece) return;
       if (e.key === "ArrowLeft") {
         move(-1);
       } else if (e.key === "ArrowRight") {
@@ -189,9 +190,10 @@ export function TetrisClient({ leaderboard, gameStarted, onGameEnd }: TetrisClie
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [isRunning, piece]);
+  }, [isRunning, piece, locked]);
 
   const startGame = () => {
+    if (locked) return;
     setBoard(createEmptyBoard());
     const first = nextPiece || randomPiece();
     setPiece(first);
@@ -268,7 +270,7 @@ export function TetrisClient({ leaderboard, gameStarted, onGameEnd }: TetrisClie
   };
 
   const handleHardDrop = () => {
-    if (!isRunning || !piece) return;
+    if (locked || !isRunning || !piece) return;
     let newY = piece.y;
     while (canMove(board, piece, 0, newY - piece.y + 1)) {
       newY += 1;
@@ -319,13 +321,54 @@ export function TetrisClient({ leaderboard, gameStarted, onGameEnd }: TetrisClie
 
   const boardToRender = renderBoard();
 
+  useEffect(() => {
+    if (gameStarted && !locked) {
+      startGame();
+    } else {
+      setIsRunning(false);
+    }
+  }, [gameStarted, locked]);
+
+  if (!gameStarted) {
+    return (
+      <>
+        <p className="text-sm text-muted-foreground">
+          기본 조작: ← → 이동, ↑ 회전, ↓ 소프트드롭, 스페이스 하드드롭
+        </p>
+        {locked && (
+          <div className="text-center text-xs text-red-600 font-bold">
+            로그인 후 플레이할 수 있습니다.
+          </div>
+        )}
+        <div className="bg-muted/50 border-2 border-black p-3 max-h-[250px] overflow-y-auto">
+          <h3 className="font-heading text-base mb-2">🏆 리더보드</h3>
+          <div className="space-y-1.5">
+            {leaderboard.slice(0, 8).map((row, idx) => (
+              <div key={row.id} className="flex items-center gap-2 bg-white p-2 border border-black/20 text-sm">
+                <div className="font-bold w-6 text-center text-xs">{idx + 1}</div>
+                <div className="flex-1">
+                  <div className="font-heading text-sm">{row.score}점</div>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {row.meta?.lines ? `${row.meta.lines}줄` : ""}
+                  {row.meta?.level ? ` • 레벨 ${row.meta.level}` : ""}
+                </div>
+              </div>
+            ))}
+            {leaderboard.length === 0 && <p className="text-xs text-muted-foreground py-2">아직 기록이 없습니다.</p>}
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 flex-wrap">
-        <NeoButton onClick={startGame} disabled={isRunning} size="sm">
+        <NeoButton onClick={startGame} disabled={isRunning || locked} size="sm">
           시작
         </NeoButton>
-        <NeoButton variant="accent" onClick={stopGame} disabled={!isRunning} size="sm">
+        <NeoButton variant="accent" onClick={stopGame} disabled={!isRunning || locked} size="sm">
           중단
         </NeoButton>
         <div className="text-sm text-muted-foreground">

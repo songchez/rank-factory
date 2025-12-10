@@ -8,7 +8,7 @@ const HEIGHT = 200;
 
 type Obstacle = { x: number; y: number; width: number; height: number };
 
-export function RunnerClient({ leaderboard, gameStarted, onGameEnd }: { leaderboard: any[]; gameStarted?: boolean; onGameEnd?: () => void }) {
+export function RunnerClient({ leaderboard, gameStarted, onGameEnd, locked = false }: { leaderboard: any[]; gameStarted?: boolean; onGameEnd?: () => void; locked?: boolean }) {
   const [playerX, setPlayerX] = useState(50);
   const [playerY, setPlayerY] = useState(150);
   const [velY, setVelY] = useState(0);
@@ -82,10 +82,12 @@ export function RunnerClient({ leaderboard, gameStarted, onGameEnd }: { leaderbo
   }, [isRunning]);
 
   const jump = () => {
+    if (locked) return;
     setVelY(jumpPower);
   };
 
   const startGame = () => {
+    if (locked) return;
     setPlayerX(50);
     setPlayerY(150);
     setVelY(0);
@@ -111,7 +113,7 @@ export function RunnerClient({ leaderboard, gameStarted, onGameEnd }: { leaderbo
     if (gameStarted && !isRunning && !gameOver) {
       startGame();
     }
-  }, [gameStarted]);
+  }, [gameStarted, locked, isRunning, gameOver]);
 
   if (!gameStarted) {
     return (
@@ -120,6 +122,11 @@ export function RunnerClient({ leaderboard, gameStarted, onGameEnd }: { leaderbo
           귀여운 픽셀 고양이와 함께 장애물을 피하며 끝없이 달려보세요!<br/>
           스페이스바 또는 화면 터치로 점프!
         </p>
+        {locked && (
+          <div className="text-center text-xs text-red-600 font-bold">
+            로그인 후 플레이할 수 있습니다.
+          </div>
+        )}
 
         <div className="bg-muted/50 border-2 border-black p-3 max-h-[250px] overflow-y-auto">
           <h3 className="font-heading text-base mb-2">🏆 리더보드</h3>

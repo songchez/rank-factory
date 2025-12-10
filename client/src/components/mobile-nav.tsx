@@ -5,12 +5,12 @@ import { useAuth } from '../hooks/useAuth';
 export function MobileNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [searchParams] = useSearchParams();
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  const modes = ['A', 'B', 'C'];
+  const modes = ['A', 'B', 'C', 'D'];
   const currentMode = searchParams.get('mode') || 'A';
 
   const isActive = (path: string) => {
@@ -68,31 +68,48 @@ export function MobileNav() {
     { path: '/?mode=A', label: '배틀', icon: '⚔️', mode: 'A' },
     { path: '/?mode=B', label: '테스트', icon: '📝', mode: 'B' },
     { path: '/?mode=C', label: '티어', icon: '🏆', mode: 'C' },
+    { path: '/?mode=D', label: '팩트', icon: '📚', mode: 'D' },
     { path: '/games', label: '게임', icon: '🎮', mode: null },
-    { path: user ? '/admin' : '/login', label: user ? '관리' : '로그인', icon: user ? '⚙️' : '👤', mode: null },
+    user
+      ? { action: 'logout', label: '로그아웃', icon: '🚪', mode: null }
+      : { path: '/login', label: '로그인', icon: '👤', mode: null },
   ];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t-3 border-black">
-      <div className="grid grid-cols-5 gap-0">
-        {navItems.map((item, idx) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex flex-col items-center justify-center py-2 ${
-              isActive(item.path)
-                ? 'bg-primary border-black'
-                : 'bg-background hover:bg-gray-50'
-            } ${
-              idx > 0 ? 'border-l-2 border-black' : ''
-            } transition-colors`}
-          >
-            <span className="text-lg mb-0.5">{item.icon}</span>
-            <span className={`text-[10px] font-bold ${isActive(item.path) ? 'text-foreground' : 'text-muted-foreground'}`}>
-              {item.label}
-            </span>
-          </Link>
-        ))}
+      <div className="grid grid-cols-6 gap-0">
+        {navItems.map((item, idx) =>
+          item.action === 'logout' ? (
+            <button
+              key="logout"
+              onClick={() => {
+                signOut();
+                navigate('/login');
+              }}
+              className="flex flex-col items-center justify-center py-2 border-l-2 border-black bg-background hover:bg-muted text-foreground transition-colors"
+            >
+              <span className="text-lg mb-0.5">{item.icon}</span>
+              <span className="text-[10px] font-bold">{item.label}</span>
+            </button>
+          ) : (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex flex-col items-center justify-center py-2 ${
+                isActive(item.path)
+                  ? 'bg-primary border-black'
+                  : 'bg-background hover:bg-gray-50'
+              } ${
+                idx > 0 ? 'border-l-2 border-black' : ''
+              } transition-colors`}
+            >
+              <span className="text-lg mb-0.5">{item.icon}</span>
+              <span className={`text-[10px] font-bold ${isActive(item.path) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {item.label}
+              </span>
+            </Link>
+          )
+        )}
       </div>
     </nav>
   );

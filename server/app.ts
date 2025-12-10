@@ -7,6 +7,7 @@ import topicsRoutes from './routes/topics';
 import rankingRoutes from './routes/ranking';
 import adminRoutes from './routes/admin';
 import seedRoutes from './routes/seed';
+import gamesRoutes from './routes/games';
 
 const app = new Hono();
 
@@ -14,6 +15,7 @@ const app = new Hono();
 app.use('*', logger());
 app.use('*', cors({
   origin: (origin) => {
+    if (!origin) return origin;
     // Allow localhost for development
     if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
       return origin;
@@ -36,5 +38,6 @@ app.route('/api/topics', topicsRoutes);
 app.route('/api/ranking', rankingRoutes);
 app.route('/api/admin', adminRoutes);
 app.route('/api/seed', seedRoutes);
+app.route('/api/games', gamesRoutes);
 
 export default app;

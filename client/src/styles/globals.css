@@ -131,3 +131,25 @@
     @apply bg-background text-foreground;
   }
 }
+
+#root {
+  min-height: 100vh;
+  background: var(--background);
+  display: flex;
+  justify-content: center;
+}
+
+.app-shell {
+  width: 100%;
+  max-width: 520px;
+  min-height: 100vh;
+  margin: 0 auto;
+  position: relative;
+  background: var(--background);
+}
+
+.full-shell {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--background);
+}

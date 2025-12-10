@@ -13,13 +13,15 @@ export default defineConfig({
     },
   },
   server: {
+    host: true, // allow LAN access
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8787',
+        target: 'http://127.0.0.1:8787',
         changeOrigin: true,
       },
     },
+    cors: true,
   },
   build: {
     outDir: path.resolve(__dirname, '../dist/client'),

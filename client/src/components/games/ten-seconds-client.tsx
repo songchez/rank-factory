@@ -5,12 +5,13 @@ import { useEffect, useState } from "react";
 interface TenSecondsClientProps {
   leaderboard: any[];
   gameStarted?: boolean;
+  locked?: boolean;
 }
 
 const GAME_ID = "ten-seconds";
 const TARGET_MS = 10000;
 
-export function TenSecondsClient({ leaderboard, gameStarted }: TenSecondsClientProps) {
+export function TenSecondsClient({ leaderboard, gameStarted, locked = false }: TenSecondsClientProps) {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -30,6 +31,7 @@ export function TenSecondsClient({ leaderboard, gameStarted }: TenSecondsClientP
   }, [isRunning, startTime]);
 
   const handleStart = () => {
+    if (locked) return;
     setStartTime(performance.now());
     setElapsed(0);
     setIsRunning(true);
@@ -38,7 +40,7 @@ export function TenSecondsClient({ leaderboard, gameStarted }: TenSecondsClientP
   };
 
   const handleStop = async () => {
-    if (!startTime) return;
+    if (!startTime || locked) return;
     const finalElapsed = performance.now() - startTime;
     setIsRunning(false);
     setElapsed(finalElapsed);
@@ -61,6 +63,11 @@ export function TenSecondsClient({ leaderboard, gameStarted }: TenSecondsClientP
           버튼을 눌러 시작하고, 정확히 10.000초에 다시 버튼을 눌러보세요!<br/>
           타이머는 숨겨져 있습니다. 당신의 시간 감각은?
         </p>
+        {locked && (
+          <div className="text-center text-xs text-red-600 font-bold">
+            로그인 후 플레이할 수 있습니다.
+          </div>
+        )}
 
         <div className="bg-muted/50 border-2 border-black p-3 max-h-[250px] overflow-y-auto">
           <h3 className="font-heading text-base mb-2">🏆 리더보드</h3>

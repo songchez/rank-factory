@@ -1,12 +1,29 @@
 import { Hono } from 'hono';
 import { createClient } from '../lib/supabase';
 import { ELO_K_FACTOR } from '../../shared/constants';
+import { ensureSeeded, buildOfflineSeed } from '../lib/seed';
+
+function hasSupabaseEnv(env?: any) {
+  const supabaseUrl = env?.SUPABASE_URL || (typeof process !== 'undefined' && process.env?.SUPABASE_URL);
+  const supabaseKey =
+    env?.SUPABASE_SERVICE_ROLE_KEY ||
+    env?.SUPABASE_PUBLISHABLE_KEY ||
+    (typeof process !== 'undefined' && (process.env?.SUPABASE_SERVICE_ROLE_KEY || process.env?.SUPABASE_PUBLISHABLE_KEY));
+  return !!(supabaseUrl && supabaseKey);
+}
 
 const ranking = new Hono();
 
 // Get ranking items for a topic
 ranking.get('/:topicId/items', async (c) => {
   try {
+    const seeded = await ensureSeeded(c.env);
+    if (!hasSupabaseEnv(c.env) && seeded.offlineData) {
+      const offline = seeded.offlineData.find((t) => t.id === c.req.param('topicId'));
+      if (!offline) return c.json({ success: false, error: 'Not found' }, 404);
+      return c.json({ success: true, data: offline.items });
+    }
+
     const topicId = c.req.param('topicId');
     const supabase = createClient(c);
 
@@ -27,6 +44,16 @@ ranking.get('/:topicId/items', async (c) => {
 // Get random pair for battle
 ranking.get('/:topicId/pair', async (c) => {
   try {
+    const seeded = await ensureSeeded(c.env);
+    if (!hasSupabaseEnv(c.env) && seeded.offlineData) {
+      const offline = seeded.offlineData.find((t) => t.id === c.req.param('topicId'));
+      if (!offline || offline.items.length < 2) {
+        return c.json({ success: false, error: 'Not enough items' }, 400);
+      }
+      const shuffled = offline.items.sort(() => 0.5 - Math.random()).slice(0, 2);
+      return c.json({ success: true, data: shuffled });
+    }
+
     const topicId = c.req.param('topicId');
     const supabase = createClient(c);
 
@@ -54,6 +81,23 @@ ranking.get('/:topicId/pair', async (c) => {
 // Submit vote and update ELO
 ranking.post('/:topicId/vote', async (c) => {
   try {
+    const seeded = await ensureSeeded(c.env);
+    if (!hasSupabaseEnv(c.env) && seeded.offlineData) {
+      const offline = seeded.offlineData.find((t) => t.id === c.req.param('topicId'));
+      if (!offline || offline.items.length < 2) {
+        return c.json({ success: false, error: 'Not enough items' }, 400);
+      }
+      const { winnerId, loserId } = await c.req.json();
+      return c.json({
+        success: true,
+        data: {
+          winner: { id: winnerId, oldElo: 1200, newElo: 1200 },
+          loser: { id: loserId, oldElo: 1200, newElo: 1200 },
+        },
+        note: 'offline seed mode (no persistence)',
+      });
+    }
+
     const topicId = c.req.param('topicId');
     const { winnerId, loserId } = await c.req.json();
 

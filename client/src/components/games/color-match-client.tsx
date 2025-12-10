@@ -87,10 +87,12 @@ export function ColorMatchClient({
   leaderboard,
   gameStarted,
   onGameEnd,
+  locked = false,
 }: {
   leaderboard: any[];
   gameStarted: boolean;
   onGameEnd: () => void;
+  locked?: boolean;
 }) {
   const [stageIdx, setStageIdx] = useState(0);
   const [rounds, setRounds] = useState<RoundResult[]>([]);
@@ -134,7 +136,7 @@ export function ColorMatchClient({
   }, [currentRound, finished, failed, onGameEnd]);
 
   const pick = async (choice: string) => {
-    if (!currentRound || finished || failed) return;
+    if (locked || !currentRound || finished || failed) return;
     const elapsed = stage.timeLimitSec * 1000 - timeLeft;
     const isCorrect = choice === currentRound.correct;
     const gained = isCorrect ? 100 : -50;
@@ -176,6 +178,11 @@ export function ColorMatchClient({
           HEX 코드에 맞는 색을 빠르게 골라보세요!<br/>
           10개의 스테이지를 클리어하며 최고 점수에 도전하세요.
         </p>
+        {locked && (
+          <div className="text-center text-xs text-red-600 font-bold">
+            로그인 후 플레이할 수 있습니다.
+          </div>
+        )}
 
         {/* Leaderboard */}
         <div className="bg-muted/50 border-2 border-black p-3 max-h-[250px] overflow-y-auto">

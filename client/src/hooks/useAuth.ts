@@ -1,50 +1,57 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-import type { User } from '@supabase/supabase-js';
+import { useCallback, useEffect, useState } from 'react';
+import { fetchSession, login, logout } from '../lib/api';
+
+export type AuthUser = {
+  id: string;
+  email: string;
+};
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+  const refreshSession = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetchSession();
+      if (res.success) setUser(res.user);
+    } catch (err) {
+      console.error(err);
+    } finally {
       setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    }
   }, []);
 
+  useEffect(() => {
+    refreshSession();
+  }, [refreshSession]);
+
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { data, error };
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await login(email, password);
+      if (res.success && res.user) {
+        setUser(res.user);
+        return { success: true };
+      }
+      const message = res.error || '로그인 실패';
+      setError(message);
+      return { success: false, error: message };
+    } catch (err) {
+      const message = (err as Error).message || '로그인 실패';
+      setError(message);
+      return { success: false, error: message };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    await logout();
+    setUser(null);
   };
 
-  const signInWithOAuth = async (provider: 'google' | 'github') => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    });
-    return { data, error };
-  };
-
-  return { user, loading, signIn, signOut, signInWithOAuth };
+  return { user, loading, error, signIn, signOut, refreshSession };
 }

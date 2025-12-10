@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom';
-import { Header } from '../../components/header';
+import { Link, useNavigate } from 'react-router-dom';
 import { NeoCard } from '../../components/neo-card';
 import { NeoButton } from '../../components/neo-button';
 
@@ -54,18 +53,32 @@ const games = [
     tag: "🧱 스킬",
     gradient: "from-purple-400 to-indigo-500",
   },
+  {
+    id: "feather-flight",
+    title: "깃털 플라이트",
+    subtitle: "Feather Flight",
+    description: "플래피 감성의 새 날리기! 파이프를 피하며 멀리 날아보세요",
+    image: "https://placehold.co/600x600/ffde59/000000?text=Feather+Flight",
+    href: "/games/feather-flight",
+    tag: "🐤 플랩",
+    gradient: "from-yellow-300 to-orange-400",
+  },
 ];
 
 export default function GamesList() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="hidden md:block">
-        <Header />
-      </div>
-      <main className="px-3 py-3 md:py-8 space-y-4">
-        <div className="px-1">
-          <p className="text-xs text-muted-foreground">순위 게임</p>
-          <h1 className="font-heading text-2xl">오늘의 챌린지</h1>
+      <main className="px-3 py-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="px-1">
+            <p className="text-xs text-muted-foreground">순위 게임</p>
+            <h1 className="font-heading text-2xl">오늘의 챌린지</h1>
+          </div>
+          <NeoButton variant="outline" size="sm" onClick={() => navigate('/')}>
+            ← 홈
+          </NeoButton>
         </div>
 
         <div className="grid grid-cols-2 gap-3">

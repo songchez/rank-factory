@@ -1,83 +1,146 @@
 import { useEffect, useRef, useState } from "react";
-import { NeoButton } from "../neo-button";
 import { submitGameScoreAction } from "../../lib/actions";
 
 const GAME_ID = "reaction";
+const GAME_DURATION = 30; // seconds
+const SPAWN_INTERVAL = 550;
 
-type Phase = "idle" | "waiting" | "go" | "result";
+type Ball = {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  ttl: number;
+  color: string;
+  createdAt: number;
+};
+
+function randomBall(): Ball {
+  const size = Math.random() * 50 + 30;
+  return {
+    id: Date.now() + Math.floor(Math.random() * 10000),
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size,
+    ttl: 3500 + Math.random() * 2500,
+    color: `hsl(${Math.random() * 360}, 80%, 60%)`,
+    createdAt: Date.now(),
+  };
+}
 
 export function ReactionClient({
   leaderboard,
   gameStarted,
+  onGameEnd,
+  locked = false,
 }: {
   leaderboard: any[];
   gameStarted: boolean;
+  onGameEnd?: (score: number) => void;
+  locked?: boolean;
 }) {
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [message, setMessage] = useState("시작을 누르면 준비 상태로 들어갑니다.");
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [reactionMs, setReactionMs] = useState<number | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [balls, setBalls] = useState<Ball[]>([]);
+  const [score, setScore] = useState(0);
+  const [popped, setPopped] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
+  const [running, setRunning] = useState(false);
+  const [ended, setEnded] = useState(false);
+  const scoreRef = useRef(0);
+  const poppedRef = useRef(0);
 
   useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
+    scoreRef.current = score;
+  }, [score]);
 
-  const startWaiting = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setPhase("waiting");
-    setMessage("곧 신호가 켜집니다. 기다리세요...");
-    const delay = 1000 + Math.random() * 2000;
-    timeoutRef.current = setTimeout(() => {
-      setPhase("go");
-      setMessage("지금! 초록색을 탭하세요!");
-      setStartTime(performance.now());
-    }, delay);
+  useEffect(() => {
+    poppedRef.current = popped;
+  }, [popped]);
+
+  const startGame = () => {
+    if (locked) return;
+    setBalls([]);
+    setScore(0);
+    setPopped(0);
+    setTimeLeft(GAME_DURATION);
+    setRunning(true);
+    setEnded(false);
   };
 
-  const handleTap = async () => {
-    if (phase === "waiting") {
-      // false start
-      setMessage("너무 빨랐습니다! 다시 시작하세요.");
-      setPhase("result");
-      setReactionMs(null);
-      return;
+  useEffect(() => {
+    if (gameStarted) {
+      startGame();
+    } else {
+      setRunning(false);
     }
-    if (phase === "go" && startTime) {
-      const end = performance.now();
-      const ms = end - startTime;
-      setReactionMs(ms);
-      setPhase("result");
-      setMessage(`반응 속도: ${ms.toFixed(0)}ms`);
-      const score = Math.max(0, 100000 - Math.round(ms));
-      await submitGameScoreAction(GAME_ID, score, undefined, undefined, { reaction_ms: Math.round(ms) });
-      return;
-    }
-    if (phase === "idle" || phase === "result") {
-      startWaiting();
-    }
+  }, [gameStarted, locked]);
+
+  useEffect(() => {
+    if (!running) return;
+    const timer = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 0.1) {
+          clearInterval(timer);
+          finishGame();
+          return 0;
+        }
+        return parseFloat((t - 0.1).toFixed(1));
+      });
+    }, 100);
+    return () => clearInterval(timer);
+  }, [running]);
+
+  useEffect(() => {
+    if (!running) return;
+    const spawner = setInterval(() => {
+      setBalls((prev) => {
+        const now = Date.now();
+        const alive = prev.filter((b) => now - b.createdAt < b.ttl);
+        return [...alive, randomBall()];
+      });
+    }, SPAWN_INTERVAL);
+    return () => clearInterval(spawner);
+  }, [running]);
+
+  useEffect(() => {
+    if (!running) return;
+    const cleanup = setInterval(() => {
+      const now = Date.now();
+      setBalls((prev) => prev.filter((b) => now - b.createdAt < b.ttl));
+    }, 300);
+    return () => clearInterval(cleanup);
+  }, [running]);
+
+  const popBall = (id: number) => {
+    if (!running) return;
+    setBalls((prev) => prev.filter((b) => b.id !== id));
+    setScore((s) => s + 120);
+    setPopped((p) => p + 1);
   };
 
-  const bgClass =
-    phase === "go"
-      ? "bg-green-500"
-      : phase === "waiting"
-      ? "bg-yellow-400"
-      : phase === "result"
-      ? "bg-muted"
-      : "bg-blue-300";
+  const finishGame = async () => {
+    setRunning(false);
+    setEnded(true);
+    const finalScore = scoreRef.current;
+    await submitGameScoreAction(GAME_ID, finalScore, undefined, undefined, {
+      popped: poppedRef.current,
+      duration: GAME_DURATION,
+    });
+    onGameEnd?.(finalScore);
+  };
 
   if (!gameStarted) {
     return (
       <>
         <p className="text-sm text-muted-foreground">
-          풍선이 나타나면 빠르게 터뜨려보세요!<br/>
-          당신의 반응속도는 몇 ms?
+          화면 곳곳에 나타나는 풍선을 빠르게 터뜨려 점수를 쌓아보세요!<br />
+          제한 시간 {GAME_DURATION}초 동안 몇 개를 터뜨릴 수 있을까요?
         </p>
+        {locked && (
+          <div className="text-center text-xs text-red-600 font-bold">
+            로그인 후 플레이할 수 있습니다.
+          </div>
+        )}
 
-        {/* Leaderboard */}
         <div className="bg-muted/50 border-2 border-black p-3 max-h-[250px] overflow-y-auto">
           <h3 className="font-heading text-base mb-2">🏆 리더보드</h3>
           <div className="space-y-1.5">
@@ -88,7 +151,7 @@ export function ReactionClient({
                   <div className="font-heading text-sm">{row.score}점</div>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {row.meta?.reaction_ms ? `${row.meta.reaction_ms}ms` : ""}
+                  {row.meta?.popped ? `${row.meta.popped}개` : ""}
                 </div>
               </div>
             ))}
@@ -100,29 +163,38 @@ export function ReactionClient({
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 flex flex-col justify-center space-y-4">
-        <div className={`rounded-2xl border-3 border-black h-full min-h-[300px] flex items-center justify-center text-center ${bgClass}`}>
-          <button
-            onClick={handleTap}
-            className="w-full h-full flex flex-col items-center justify-center font-heading"
-          >
-            <div className="text-4xl mb-2">
-              {phase === "go" ? "🎈" : phase === "waiting" ? "⏳" : phase === "result" ? "🔄" : "▶️"}
-            </div>
-            <div className="text-2xl">
-              {phase === "go" ? "탭!" : phase === "waiting" ? "기다리세요..." : phase === "result" ? "다시 시작" : "시작"}
-            </div>
-          </button>
+    <div className="h-full flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-xs text-muted-foreground">남은 시간</div>
+          <div className="font-heading text-2xl">{timeLeft.toFixed(1)}s</div>
         </div>
+        <div className="text-right">
+          <div className="text-xs text-muted-foreground">점수</div>
+          <div className="font-heading text-2xl">{score}</div>
+        </div>
+      </div>
 
-        <div className="text-center text-sm text-muted-foreground">{message}</div>
-
-        {reactionMs !== null && (
-          <div className="text-center p-4 bg-primary/20 border-2 border-black">
-            <div className="text-3xl font-heading">
-              {reactionMs.toFixed(0)}ms
-            </div>
+      <div className="relative flex-1 border-3 border-black bg-white overflow-hidden rounded-xl" onClick={() => running || ended ? undefined : startGame()}>
+        {balls.map((ball) => (
+          <button
+            key={ball.id}
+            onClick={() => popBall(ball.id)}
+            className="absolute rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.4)] active:translate-y-0.5 transition-transform"
+            style={{
+              width: ball.size,
+              height: ball.size,
+              backgroundColor: ball.color,
+              left: `${ball.x}%`,
+              top: `${ball.y}%`,
+              transform: `translate(-50%, -50%)`,
+            }}
+          />
+        ))}
+        {ended && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white gap-2">
+            <div className="font-heading text-2xl">시간 종료!</div>
+            <div className="text-sm">터뜨린 풍선 {poppedRef.current}개</div>
           </div>
         )}
       </div>

@@ -1,4 +1,4 @@
-import type { RankingTopic } from '../../../shared/types';
+import type { RankingTopic, RankingItem } from './types';
 
 export type TopicMode = 'A' | 'B' | 'C' | 'D';
 
@@ -44,4 +44,32 @@ export function getModeLabel(mode: TopicMode) {
     default:
       return '배틀';
   }
+}
+
+export function normalizeItem(raw: any): RankingItem {
+  return {
+    ...raw,
+    topicId: raw.topicId ?? raw.topic_id,
+    topic_id: raw.topic_id ?? raw.topicId,
+    imageUrl: raw.image_url ?? raw.imageUrl,
+    image_url: raw.image_url ?? raw.imageUrl,
+    externalUrl: raw.external_url ?? raw.externalUrl,
+    rankOrder: raw.rankOrder ?? raw.rank_order ?? 0,
+    eloScore: raw.elo_score ?? raw.eloScore ?? 1200,
+    winCount: raw.win_count ?? raw.winCount ?? 0,
+    lossCount: raw.loss_count ?? raw.lossCount ?? 0,
+    matchCount: raw.match_count ?? raw.matchCount ?? 0,
+    meta: raw.meta ?? {},
+  };
+}
+
+export function normalizeTopic(raw: any): RankingTopic {
+  return {
+    ...raw,
+    view_type: raw.view_type ?? raw.viewType ?? 'battle',
+    mode: raw.mode ?? resolveMode(raw as RankingTopic),
+    createdAt: raw.created_at ?? raw.createdAt,
+    created_at: raw.created_at ?? raw.createdAt,
+    items: (raw.items || []).map(normalizeItem),
+  };
 }
