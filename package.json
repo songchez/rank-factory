@@ -9,7 +9,7 @@
     "build": "bun run build:client",
     "build:client": "vite build --config client/vite.config.ts",
     "preview": "wrangler pages dev dist/client",
-    "deploy": "wrangler pages deploy dist/client",
+    "deploy": "bun run build:client && wrangler pages deploy dist/client",
     "lint": "eslint client/src server"
   },
   "dependencies": {
