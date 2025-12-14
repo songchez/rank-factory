@@ -96,16 +96,11 @@ export default function Home() {
             <h1 className="font-heading text-2xl md:text-3xl">오늘의 투표</h1>
             <p className="text-xs text-muted-foreground">모바일 · 데스크톱 모두를 위한 반응형 카드 피드</p>
           </div>
-          <div className="flex gap-2 md:gap-3">
-            <NeoButton variant="outline" size="sm" className="md:px-4" onClick={() => navigate('/games')}>
-              🎮 게임
+          {!user && (
+            <NeoButton variant="outline" size="sm" className="md:px-4" onClick={() => navigate('/login')}>
+              로그인
             </NeoButton>
-            {!user && (
-              <NeoButton variant="outline" size="sm" className="md:px-4" onClick={() => navigate('/login')}>
-                로그인
-              </NeoButton>
-            )}
-          </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3">
