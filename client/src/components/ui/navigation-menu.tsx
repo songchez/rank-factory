@@ -60,7 +60,7 @@ export const NavigationMenuLink = React.forwardRef<HTMLAnchorElement, NavLinkPro
   ({ className, children, ...props }, ref) => (
     <a
       ref={ref}
-      className={cn("block rounded-md px-3 py-2 text-sm hover:bg-muted transition-colors", className)}
+      className={cn("relative block rounded-md px-3 py-2 text-sm transition-all after:absolute after:left-0 after:bottom-1 after:h-[2px] after:w-0 after:bg-foreground after:transition-all after:duration-200 hover:after:w-full", className)}
       {...props}
     >
       {children}
@@ -71,6 +71,6 @@ NavigationMenuLink.displayName = "NavigationMenuLink";
 
 export const navigationMenuTriggerStyle = (className?: string) =>
   cn(
-    "inline-flex items-center rounded-md border border-transparent px-3 py-2 text-sm font-medium hover:bg-muted transition-colors",
+    "inline-flex items-center rounded-md border border-transparent px-3 py-2 text-sm font-medium transition-all",
     className
   );

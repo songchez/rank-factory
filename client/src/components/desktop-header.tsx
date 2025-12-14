@@ -46,22 +46,22 @@ export function DesktopHeader() {
               { key: 'G', label: '게임', path: '/games' },
             ].map((item) => (
               <NavigationMenuItem key={item.key}>
-                <NavigationMenuLink
-                  href={item.path || `/?mode=${item.key}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (item.path) {
-                      navigate(item.path);
-                    } else {
-                      navigate(`/?mode=${item.key}`);
-                    }
-                  }}
-                  className={navigationMenuTriggerStyle("hover:underline underline-offset-[6px] decoration-2")}
-                >
-                  {item.label}
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
+              <NavigationMenuLink
+                href={item.path || `/?mode=${item.key}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (item.path) {
+                    navigate(item.path);
+                  } else {
+                    navigate(`/?mode=${item.key}`);
+                  }
+                }}
+                className={navigationMenuTriggerStyle()}
+              >
+                {item.label}
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          ))}
           </NavigationMenuList>
         </NavigationMenu>
       </div>
