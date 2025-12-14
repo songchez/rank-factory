@@ -6,7 +6,7 @@ import Admin from './pages/Admin';
 import Ranking from './pages/Ranking';
 import Battle from './pages/Battle';
 import Tier from './pages/Tier';
-import Fact from './pages/Fact';
+import Blog from './pages/Blog';
 import Test from './pages/Test';
 import Profile from './pages/Profile';
 import GamesList from './pages/games/GamesList';
@@ -42,8 +42,8 @@ function AppShell() {
           <Route path="/ranking/:id" element={<Ranking />} />
           <Route path="/battle/:id" element={<Battle />} />
           <Route path="/tier/:id" element={<Tier />} />
-          <Route path="/fact/:id" element={<Fact />} />
-          <Route path="/blog/:id" element={<Fact />} />
+          <Route path="/fact/:id" element={<Blog />} />
+          <Route path="/blog/:id" element={<Blog />} />
           <Route path="/test/:id" element={<Test />} />
           <Route path="/games" element={<GamesList />} />
           <Route path="/games/tetris" element={<Tetris />} />

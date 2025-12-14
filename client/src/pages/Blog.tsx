@@ -6,7 +6,7 @@ import { useTopic } from '../hooks/useTopic';
 import { NeoButton } from '../components/neo-button';
 import Comments from '../components/comments';
 
-export default function Fact() {
+export default function Blog() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { topic, loading, error, reload } = useTopic(id);
