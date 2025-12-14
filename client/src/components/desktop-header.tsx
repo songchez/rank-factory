@@ -3,6 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { NeoButton } from './neo-button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  navigationMenuTriggerStyle,
+} from './ui/navigation-menu';
 
 export function DesktopHeader() {
   const { user, signOut } = useAuth();
@@ -25,13 +32,61 @@ export function DesktopHeader() {
 
   return (
     <header className="hidden md:flex items-center justify-between py-3">
-      <Link to="/" className="font-heading text-xl">
-        Rank Factory
-      </Link>
+      <div className="flex items-center gap-4">
+        <Link to="/" className="font-heading text-xl">
+          Rank Factory
+        </Link>
+        <NavigationMenu>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/');
+                }}
+                className={navigationMenuTriggerStyle()}
+              >
+                오늘의 투표
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                href="/games"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/games');
+                }}
+                className={navigationMenuTriggerStyle()}
+              >
+                게임
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                href="/fact"
+                onClick={(e) => e.preventDefault()}
+                className={navigationMenuTriggerStyle("text-muted-foreground cursor-not-allowed")}
+              >
+                팩트
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                href="/admin"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/admin');
+                }}
+                className={navigationMenuTriggerStyle()}
+              >
+                관리자
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>
       <div className="flex items-center gap-3">
-        <NeoButton variant="outline" size="sm" onClick={() => navigate('/games')}>
-          게임
-        </NeoButton>
         <div className="relative" ref={menuRef}>
           <button onClick={() => setOpen((v) => !v)} className="focus:outline-none">
             <Avatar>
