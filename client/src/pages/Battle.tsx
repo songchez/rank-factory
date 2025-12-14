@@ -28,7 +28,7 @@ export default function Battle() {
   const bracketLabel = useMemo(() => {
     if (currentSize <= 1) return '결승';
     const top = Math.pow(2, Math.ceil(Math.log2(Math.max(currentSize, 2))));
-    return `Top ${top} · 남은 ${currentSize}`;
+    return `${top}강`;
   }, [currentSize]);
 
   const padToPowerOfTwo = (list: RankingItem[]) => {
@@ -197,7 +197,7 @@ export default function Battle() {
       <div className="absolute top-2 left-2 z-20 space-y-1">
         <div className="text-xs uppercase text-white/70">{topic.category}</div>
         <div className="font-heading text-lg">{topic.title}</div>
-        <div className="text-xs text-white/70">Round {roundNumber} · {bracketLabel}</div>
+        <div className="text-xs text-white/70">{bracketLabel}</div>
       </div>
 
       {locked && (
