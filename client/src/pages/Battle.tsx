@@ -22,14 +22,19 @@ export default function Battle() {
   const [placements, setPlacements] = useState<RankingItem[]>([]);
   const [champion, setChampion] = useState<RankingItem | null>(null);
   const [done, setDone] = useState(false);
+  const [stageSize, setStageSize] = useState(0);
 
   const currentPair = useMemo(() => currentRound.slice(0, 2), [currentRound]);
-  const currentSize = currentRound.length + nextRound.length;
   const bracketLabel = useMemo(() => {
-    if (currentSize <= 1) return '결승';
-    const top = Math.pow(2, Math.ceil(Math.log2(Math.max(currentSize, 2))));
+    if (stageSize <= 1) return '결승';
+    const top = Math.pow(2, Math.ceil(Math.log2(Math.max(stageSize, 2))));
     return `${top}강`;
-  }, [currentSize]);
+  }, [stageSize]);
+  const stageMatches = Math.max(1, Math.floor(stageSize / 2));
+  const currentMatch = Math.min(
+    stageMatches,
+    Math.max(1, Math.floor((stageSize - currentRound.length) / 2) + 1),
+  );
 
   const padToPowerOfTwo = (list: RankingItem[]) => {
     const target = Math.pow(2, Math.ceil(Math.log2(Math.max(list.length, 2))));
@@ -54,6 +59,7 @@ export default function Battle() {
     setCurrentRound(shuffled);
     setNextRound([]);
     setRoundNumber(1);
+    setStageSize(shuffled.length);
     setPlacements([]);
     setChampion(null);
     setDone(false);
@@ -73,6 +79,7 @@ export default function Battle() {
         setDone(true);
         setNextRound([]);
       } else {
+        setStageSize(nextRound.length);
         setCurrentRound(nextRound);
         setNextRound([]);
         setRoundNumber((r) => r + 1);
@@ -95,6 +102,7 @@ export default function Battle() {
         setCurrentRound([]);
         setNextRound([]);
       } else {
+        setStageSize(updatedNext.length);
         setCurrentRound(updatedNext);
         setNextRound([]);
         setRoundNumber((r) => r + 1);
@@ -203,7 +211,9 @@ export default function Battle() {
       <div className="absolute top-2 left-2 z-20 space-y-1">
         <div className="text-xs uppercase text-white/70">{topic.category}</div>
         <div className="font-heading text-lg">{topic.title}</div>
-        <div className="text-xs text-white/70">{bracketLabel} · Round {roundNumber}</div>
+        <div className="text-xs text-white/70">
+          {bracketLabel} · {currentMatch}/{stageMatches} 라운드
+        </div>
       </div>
 
       {locked && (
