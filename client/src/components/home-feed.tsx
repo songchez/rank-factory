@@ -18,7 +18,7 @@ const modeColors: Record<string, { bg: string; border: string; label: string }> 
   A: { bg: "bg-red-50", border: "border-red-500", label: "배틀" },
   B: { bg: "bg-blue-50", border: "border-blue-500", label: "테스트" },
   C: { bg: "bg-purple-50", border: "border-purple-500", label: "티어" },
-  D: { bg: "bg-green-50", border: "border-green-500", label: "팩트" },
+  D: { bg: "bg-green-50", border: "border-green-500", label: "블로그" },
 };
 
 interface HomeFeedProps {

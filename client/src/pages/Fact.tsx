@@ -51,7 +51,7 @@ export default function Fact() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">팩트 시트 로딩 중...</p>
+        <p className="text-sm text-muted-foreground">블로그 글 로딩 중...</p>
       </div>
     );
   }
@@ -73,7 +73,7 @@ export default function Fact() {
         {/* 상단 헤더 */}
         <div className="flex items-center justify-between border-b border-black/10 pb-4">
           <div className="space-y-1">
-            <p className="text-xs uppercase text-muted-foreground tracking-wide">랭킹공장 · Fact</p>
+            <p className="text-xs uppercase text-muted-foreground tracking-wide">랭킹공장 · Blog</p>
             <h1 className="font-heading text-2xl md:text-3xl">{topic.title}</h1>
           </div>
           <NeoButton variant="outline" size="sm" onClick={() => navigate('/')}>

@@ -42,7 +42,7 @@ export function DesktopHeader() {
               { key: 'A', label: '배틀' },
               { key: 'B', label: '테스트' },
               { key: 'C', label: '티어' },
-              { key: 'D', label: '팩트' },
+              { key: 'D', label: '블로그' },
               { key: 'G', label: '게임', path: '/games' },
             ].map((item) => (
               <NavigationMenuItem key={item.key}>

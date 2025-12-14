@@ -18,7 +18,7 @@ export function getModePlayPath(topic: Pick<RankingTopic, 'id' | 'mode' | 'view_
     case 'C':
       return `/tier/${topic.id}`;
     case 'D':
-      return `/fact/${topic.id}`;
+      return `/blog/${topic.id}`;
     case 'A':
     default:
       return `/battle/${topic.id}`;
@@ -40,7 +40,7 @@ export function getModeLabel(mode: TopicMode) {
     case 'C':
       return '티어';
     case 'D':
-      return '팩트';
+      return '블로그';
     default:
       return '배틀';
   }

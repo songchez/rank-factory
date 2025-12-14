@@ -82,7 +82,7 @@ export function MobileNav() {
     { path: '/?mode=A', label: '배틀', icon: '⚔️', mode: 'A' },
     { path: '/?mode=B', label: '테스트', icon: '📝', mode: 'B' },
     { path: '/?mode=C', label: '티어', icon: '🏆', mode: 'C' },
-    { path: '/?mode=D', label: '팩트', icon: '📚', mode: 'D' },
+    { path: '/?mode=D', label: '블로그', icon: '📚', mode: 'D' },
     { path: '/games', label: '게임', icon: '🎮', mode: null },
     user
       ? { action: 'logout', label: '로그아웃', icon: '🚪', mode: null }

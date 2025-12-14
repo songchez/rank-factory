@@ -8,6 +8,7 @@ import { NeoCard } from '../components/neo-card';
 import { useAuth } from '../hooks/useAuth';
 import type { RankingItem } from '../lib/types';
 import Comments from '../components/comments';
+import { Share2 } from 'lucide-react';
 
 export default function Battle() {
   const { id } = useParams();
@@ -147,9 +148,30 @@ export default function Battle() {
             <p className="text-[11px] text-muted-foreground uppercase">{topic.category}</p>
             <h1 className="font-heading text-2xl">토너먼트 결과</h1>
           </div>
-          <NeoButton variant="outline" size="sm" onClick={() => navigate('/')}>
-            돌아가기
-          </NeoButton>
+          <div className="flex items-center gap-2">
+            <NeoButton variant="outline" size="sm" onClick={() => navigate('/')}>
+              돌아가기
+            </NeoButton>
+            <NeoButton
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                const shareData = {
+                  title: topic.title,
+                  text: `토너먼트 결과 - 우승: ${champion.name}`,
+                  url: typeof window !== 'undefined' ? window.location.href : '',
+                };
+                if (navigator.share) {
+                  navigator.share(shareData).catch(() => {});
+                } else if (navigator.clipboard) {
+                  navigator.clipboard.writeText(shareData.url).catch(() => {});
+                }
+              }}
+              className="flex items-center gap-1"
+            >
+              <Share2 className="w-4 h-4" /> 공유
+            </NeoButton>
+          </div>
         </div>
         <NeoCard className="p-4 space-y-3">
           {ranking.map((item, idx) => (

@@ -43,6 +43,7 @@ function AppShell() {
           <Route path="/battle/:id" element={<Battle />} />
           <Route path="/tier/:id" element={<Tier />} />
           <Route path="/fact/:id" element={<Fact />} />
+          <Route path="/blog/:id" element={<Fact />} />
           <Route path="/test/:id" element={<Test />} />
           <Route path="/games" element={<GamesList />} />
           <Route path="/games/tetris" element={<Tetris />} />
