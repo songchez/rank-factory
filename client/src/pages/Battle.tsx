@@ -24,10 +24,33 @@ export default function Battle() {
   const [done, setDone] = useState(false);
 
   const currentPair = useMemo(() => currentRound.slice(0, 2), [currentRound]);
+  const currentSize = currentRound.length + nextRound.length;
+  const bracketLabel = useMemo(() => {
+    if (currentSize <= 1) return '결승';
+    const top = Math.pow(2, Math.ceil(Math.log2(Math.max(currentSize, 2))));
+    return `Top ${top} · 남은 ${currentSize}`;
+  }, [currentSize]);
+
+  const padToPowerOfTwo = (list: RankingItem[]) => {
+    const target = Math.pow(2, Math.ceil(Math.log2(Math.max(list.length, 2))));
+    const padded = [...list];
+    while (padded.length < target) {
+      padded.push({
+        id: `bye-${padded.length}`,
+        name: 'BYE',
+        imageUrl: '',
+        image_url: '',
+        meta: { bye: true },
+      } as RankingItem);
+    }
+    return padded;
+  };
 
   useEffect(() => {
     if (!topic) return;
-    const shuffled = [...topic.items].map(normalizeItem).sort(() => Math.random() - 0.5);
+    const shuffled = padToPowerOfTwo(
+      [...topic.items].map(normalizeItem).sort(() => Math.random() - 0.5),
+    );
     setCurrentRound(shuffled);
     setNextRound([]);
     setRoundNumber(1);
@@ -57,6 +80,31 @@ export default function Battle() {
     }
   }, [currentRound, nextRound, done]);
 
+  const progressBracket = (winner: RankingItem, loser?: RankingItem) => {
+    if (loser && !loser.meta?.bye) {
+      setPlacements((prev) => [loser, ...prev]);
+    }
+
+    const updatedCurrent = currentRound.slice(2);
+    const updatedNext = [...nextRound, winner];
+
+    if (updatedCurrent.length === 0) {
+      if (updatedNext.length === 1) {
+        setChampion(updatedNext[0]);
+        setDone(true);
+        setCurrentRound([]);
+        setNextRound([]);
+      } else {
+        setCurrentRound(updatedNext);
+        setNextRound([]);
+        setRoundNumber((r) => r + 1);
+      }
+    } else {
+      setCurrentRound(updatedCurrent);
+      setNextRound(updatedNext);
+    }
+  };
+
   const handleVote = async (winnerId: string) => {
     if (locked || !id || currentPair.length < 2) return;
     const winner = currentPair.find((i) => i.id === winnerId);
@@ -66,32 +114,27 @@ export default function Battle() {
     setSubmitting(true);
     try {
       await submitVote(id, winnerId, loser.id);
-      setPlacements((prev) => [loser, ...prev]);
-
-      const updatedCurrent = currentRound.slice(2);
-      const updatedNext = [...nextRound, winner];
-
-      if (updatedCurrent.length === 0) {
-        if (updatedNext.length === 1) {
-          setChampion(updatedNext[0]);
-          setDone(true);
-          setCurrentRound([]);
-          setNextRound([]);
-        } else {
-          setCurrentRound(updatedNext);
-          setNextRound([]);
-          setRoundNumber((r) => r + 1);
-        }
-      } else {
-        setCurrentRound(updatedCurrent);
-        setNextRound(updatedNext);
-      }
+      progressBracket(winner, loser);
     } catch (err) {
       console.error(err);
     } finally {
       setSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (done) return;
+    if (currentPair.length === 2) {
+      const [a, b] = currentPair;
+      const aBye = (a as any)?.meta?.bye;
+      const bBye = (b as any)?.meta?.bye;
+      if (aBye && !bBye) {
+        progressBracket(b, a);
+      } else if (bBye && !aBye) {
+        progressBracket(a, b);
+      }
+    }
+  }, [currentPair, done]);
 
   if (topicLoading) {
     return (
@@ -154,7 +197,7 @@ export default function Battle() {
       <div className="absolute top-2 left-2 z-20 space-y-1">
         <div className="text-xs uppercase text-white/70">{topic.category}</div>
         <div className="font-heading text-lg">{topic.title}</div>
-        <div className="text-xs text-white/70">Round {roundNumber}</div>
+        <div className="text-xs text-white/70">Round {roundNumber} · {bracketLabel}</div>
       </div>
 
       {locked && (
