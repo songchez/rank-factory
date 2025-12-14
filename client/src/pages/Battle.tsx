@@ -111,6 +111,12 @@ export default function Battle() {
     const loser = currentPair.find((i) => i.id !== winnerId);
     if (!winner || !loser) return;
 
+    // BYE 매치업은 투표 없이 바로 진행
+    if (winner.meta?.bye || loser.meta?.bye) {
+      progressBracket(winner, loser);
+      return;
+    }
+
     setSubmitting(true);
     try {
       await submitVote(id, winnerId, loser.id);
