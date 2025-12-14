@@ -26,36 +26,18 @@ export default function Battle() {
 
   const currentPair = useMemo(() => currentRound.slice(0, 2), [currentRound]);
   const bracketLabel = useMemo(() => {
-    if (stageSize <= 1) return '결승';
-    const top = Math.pow(2, Math.ceil(Math.log2(Math.max(stageSize, 2))));
-    return `${top}강`;
+    if (stageSize <= 2) return '결승';
+    return `${stageSize}강`;
   }, [stageSize]);
-  const stageMatches = Math.max(1, Math.floor(stageSize / 2));
+  const stageMatches = Math.max(1, Math.ceil(stageSize / 2));
   const currentMatch = Math.min(
     stageMatches,
     Math.max(1, Math.floor((stageSize - currentRound.length) / 2) + 1),
   );
 
-  const padToPowerOfTwo = (list: RankingItem[]) => {
-    const target = Math.pow(2, Math.ceil(Math.log2(Math.max(list.length, 2))));
-    const padded = [...list];
-    while (padded.length < target) {
-      padded.push({
-        id: `bye-${padded.length}`,
-        name: 'BYE',
-        imageUrl: '',
-        image_url: '',
-        meta: { bye: true },
-      } as RankingItem);
-    }
-    return padded;
-  };
-
   useEffect(() => {
     if (!topic) return;
-    const shuffled = padToPowerOfTwo(
-      [...topic.items].map(normalizeItem).sort(() => Math.random() - 0.5),
-    );
+    const shuffled = [...topic.items].map(normalizeItem).sort(() => Math.random() - 0.5);
     setCurrentRound(shuffled);
     setNextRound([]);
     setRoundNumber(1);
@@ -67,6 +49,13 @@ export default function Battle() {
 
   useEffect(() => {
     if (done) return;
+    // 홀수 인원일 때 마지막 한 명을 자동 진출
+    if (currentRound.length > 1 && currentRound.length % 2 === 1) {
+      setNextRound((prev) => [...prev, currentRound[currentRound.length - 1]]);
+      setCurrentRound((prev) => prev.slice(0, -1));
+      return;
+    }
+
     if (currentRound.length === 1) {
       setNextRound((prev) => [...prev, currentRound[0]]);
       setCurrentRound([]);
@@ -88,7 +77,7 @@ export default function Battle() {
   }, [currentRound, nextRound, done]);
 
   const progressBracket = (winner: RankingItem, loser?: RankingItem) => {
-    if (loser && !loser.meta?.bye) {
+    if (loser) {
       setPlacements((prev) => [loser, ...prev]);
     }
 
@@ -119,12 +108,6 @@ export default function Battle() {
     const loser = currentPair.find((i) => i.id !== winnerId);
     if (!winner || !loser) return;
 
-    // BYE 매치업은 투표 없이 바로 진행
-    if (winner.meta?.bye || loser.meta?.bye) {
-      progressBracket(winner, loser);
-      return;
-    }
-
     setSubmitting(true);
     try {
       await submitVote(id, winnerId, loser.id);
@@ -135,20 +118,6 @@ export default function Battle() {
       setSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    if (done) return;
-    if (currentPair.length === 2) {
-      const [a, b] = currentPair;
-      const aBye = (a as any)?.meta?.bye;
-      const bBye = (b as any)?.meta?.bye;
-      if (aBye && !bBye) {
-        progressBracket(b, a);
-      } else if (bBye && !aBye) {
-        progressBracket(a, b);
-      }
-    }
-  }, [currentPair, done]);
 
   if (topicLoading) {
     return (
