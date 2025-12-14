@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useTopic } from '../hooks/useTopic';
 import { NeoButton } from '../components/neo-button';
+import Comments from '../components/comments';
 
 export default function Fact() {
   const { id } = useParams();
@@ -166,6 +167,9 @@ export default function Fact() {
                 ))}
               </ol>
             </section>
+
+            {/* 댓글 */}
+            <Comments topicId={topic.id} />
 
             {/* 추천 / 다음·이전 */}
             {recommended.length > 0 && (

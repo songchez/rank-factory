@@ -8,6 +8,7 @@ import rankingRoutes from './routes/ranking';
 import adminRoutes from './routes/admin';
 import seedRoutes from './routes/seed';
 import gamesRoutes from './routes/games';
+import commentsRoutes from './routes/comments';
 
 const app = new Hono();
 
@@ -39,5 +40,6 @@ app.route('/api/ranking', rankingRoutes);
 app.route('/api/admin', adminRoutes);
 app.route('/api/seed', seedRoutes);
 app.route('/api/games', gamesRoutes);
+app.route('/api/comments', commentsRoutes);
 
 export default app;

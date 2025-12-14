@@ -5,8 +5,16 @@ import { setCookie } from 'hono/cookie';
 
 export function createClient(c: Context) {
   const env = c.env as any;
-  const supabaseUrl = env?.SUPABASE_URL || (typeof process !== 'undefined' && process.env?.SUPABASE_URL);
-  const supabaseKey = env?.SUPABASE_PUBLISHABLE_KEY || (typeof process !== 'undefined' && process.env?.SUPABASE_PUBLISHABLE_KEY);
+  const supabaseUrl =
+    env?.SUPABASE_URL ||
+    env?.VITE_SUPABASE_URL ||
+    (typeof process !== 'undefined' && (process.env?.SUPABASE_URL || process.env?.VITE_SUPABASE_URL));
+
+  const supabaseKey =
+    env?.SUPABASE_PUBLISHABLE_KEY ||
+    env?.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    (typeof process !== 'undefined' &&
+      (process.env?.SUPABASE_PUBLISHABLE_KEY || process.env?.VITE_SUPABASE_PUBLISHABLE_KEY));
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error('Supabase environment variables are missing');
@@ -32,6 +40,7 @@ export function createClient(c: Context) {
         return parseCookies();
       },
       setAll(cookiesToSet) {
+        const isSecure = c.req.url.startsWith('https://');
         cookiesToSet.forEach(({ name, value, options }) => {
           const sameSite =
             typeof options?.sameSite === 'string'
@@ -39,6 +48,7 @@ export function createClient(c: Context) {
               : 'Lax';
           setCookie(c, name, value, {
             ...options,
+            secure: options?.secure ?? isSecure,
             sameSite,
             path: '/',
           });
@@ -49,7 +59,10 @@ export function createClient(c: Context) {
 }
 
 export function createAdminClient(env?: any) {
-  const supabaseUrl = env?.SUPABASE_URL || (typeof process !== 'undefined' && process.env?.SUPABASE_URL);
+  const supabaseUrl =
+    env?.SUPABASE_URL ||
+    env?.VITE_SUPABASE_URL ||
+    (typeof process !== 'undefined' && (process.env?.SUPABASE_URL || process.env?.VITE_SUPABASE_URL));
   const serviceRoleKey =
     env?.SUPABASE_SERVICE_ROLE_KEY ||
     env?.SUPABASE_SECRET_KEY ||

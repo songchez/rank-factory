@@ -8,6 +8,7 @@ import Battle from './pages/Battle';
 import Tier from './pages/Tier';
 import Fact from './pages/Fact';
 import Test from './pages/Test';
+import Profile from './pages/Profile';
 import GamesList from './pages/games/GamesList';
 import Tetris from './pages/games/Tetris';
 import Reaction from './pages/games/Reaction';
@@ -15,6 +16,7 @@ import ColorMatch from './pages/games/ColorMatch';
 import Runner from './pages/games/Runner';
 import TenSeconds from './pages/games/TenSeconds';
 import FeatherFlight from './pages/games/FeatherFlight';
+import DesktopHeader from './components/desktop-header';
 
 function AppShell() {
   const location = useLocation();
@@ -26,10 +28,16 @@ function AppShell() {
 
   return (
     <div className={shellClass}>
+      {!showMobileNav && isBattleFullScreen ? null : (
+        <div className="px-4 lg:px-8">
+          <DesktopHeader />
+        </div>
+      )}
       <div className={showMobileNav ? 'pb-16' : ''}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/ranking/:id" element={<Ranking />} />
           <Route path="/battle/:id" element={<Battle />} />

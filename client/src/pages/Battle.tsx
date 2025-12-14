@@ -7,6 +7,7 @@ import { NeoButton } from '../components/neo-button';
 import { NeoCard } from '../components/neo-card';
 import { useAuth } from '../hooks/useAuth';
 import type { RankingItem } from '../lib/types';
+import Comments from '../components/comments';
 
 export default function Battle() {
   const { id } = useParams();
@@ -138,6 +139,10 @@ export default function Battle() {
             </div>
           ))}
         </NeoCard>
+
+        <div className="max-w-3xl">
+          <Comments topicId={topic.id} />
+        </div>
       </div>
     );
   }

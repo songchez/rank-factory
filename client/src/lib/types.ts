@@ -41,7 +41,9 @@ export interface RankingTopic {
 export interface Comment {
   id: string;
   topic_id: string;
-  nickname: string;
+  user_id?: string;
+  nickname?: string;
+  author?: string;
   content: string;
   created_at: string;
 }

@@ -138,3 +138,15 @@ export async function submitScore(gameId: string, score: number, meta?: Record<s
     body: JSON.stringify({ score, meta }),
   });
 }
+
+// Comments API
+export async function fetchComments(topicId: string) {
+  return fetcher<{ success: boolean; data: any[] }>(`/api/comments?topicId=${encodeURIComponent(topicId)}`);
+}
+
+export async function postComment(topicId: string, content: string) {
+  return fetcher<{ success: boolean; data: any }>(`/api/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ topicId, content }),
+  });
+}
