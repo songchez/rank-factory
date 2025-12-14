@@ -56,7 +56,7 @@ export function DesktopHeader() {
                       navigate(`/?mode=${item.key}`);
                     }
                   }}
-                  className={navigationMenuTriggerStyle()}
+                  className={navigationMenuTriggerStyle("hover:underline underline-offset-[6px] decoration-2")}
                 >
                   {item.label}
                 </NavigationMenuLink>
