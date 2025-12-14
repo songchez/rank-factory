@@ -66,29 +66,33 @@ export function DesktopHeader() {
         </NavigationMenu>
       </div>
       <div className="flex items-center gap-3">
-        <div className="relative" ref={menuRef}>
-          <button onClick={() => setOpen((v) => !v)} className="focus:outline-none">
-            <Avatar>
-              {avatarImage && <AvatarImage src={avatarImage} alt={user?.email} />}
-              <AvatarFallback>{avatarLabel}</AvatarFallback>
-            </Avatar>
-          </button>
-          {open && (
-            <div className="absolute right-0 mt-2 w-44 rounded-lg border border-black/10 bg-white shadow-md z-20">
-              <div className="px-3 py-2 border-b border-black/10 text-sm">
-                {user ? user.email : '게스트'}
-              </div>
-              <div className="py-1">
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    navigate('/profile');
-                  }}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
-                >
-                  내 정보
-                </button>
-                {user ? (
+        {!user ? (
+          <NeoButton size="sm" variant="outline" onClick={() => navigate('/login')}>
+            로그인
+          </NeoButton>
+        ) : (
+          <div className="relative" ref={menuRef}>
+            <button onClick={() => setOpen((v) => !v)} className="focus:outline-none">
+              <Avatar>
+                {avatarImage && <AvatarImage src={avatarImage} alt={user?.email} />}
+                <AvatarFallback>{avatarLabel}</AvatarFallback>
+              </Avatar>
+            </button>
+            {open && (
+              <div className="absolute right-0 mt-2 w-44 rounded-lg border border-black/10 bg-white shadow-md z-20">
+                <div className="px-3 py-2 border-b border-black/10 text-sm">
+                  {user?.email}
+                </div>
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      navigate('/profile');
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                  >
+                    내 정보
+                  </button>
                   <button
                     onClick={async () => {
                       setOpen(false);
@@ -99,21 +103,11 @@ export function DesktopHeader() {
                   >
                     로그아웃
                   </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setOpen(false);
-                      navigate('/login');
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
-                  >
-                    로그인
-                  </button>
-                )}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

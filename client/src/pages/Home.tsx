@@ -89,11 +89,6 @@ export default function Home() {
             <h1 className="font-heading text-2xl md:text-3xl">오늘의 투표</h1>
             <p className="text-xs text-muted-foreground">모바일 · 데스크톱 모두를 위한 반응형 카드 피드</p>
           </div>
-          {!user && (
-            <NeoButton variant="outline" size="sm" className="md:px-4" onClick={() => navigate('/login')}>
-              로그인
-            </NeoButton>
-          )}
         </div>
 
         <HomeFeed topics={topics} filterMode={filterMode} />
