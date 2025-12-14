@@ -135,21 +135,87 @@
 #root {
   min-height: 100vh;
   background: var(--background);
-  display: flex;
-  justify-content: center;
 }
 
 .app-shell {
   width: 100%;
-  max-width: 520px;
   min-height: 100vh;
   margin: 0 auto;
   position: relative;
   background: var(--background);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 640px) {
+  .app-shell {
+    max-width: 720px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    max-width: 1200px;
+    padding-left: 32px;
+    padding-right: 32px;
+    padding-top: 16px;
+    padding-bottom: 32px;
+  }
 }
 
 .full-shell {
   width: 100%;
   min-height: 100vh;
   background: var(--background);
+}
+
+/* Light blog-style typography for markdown bodies */
+.blog-markdown h1,
+.blog-markdown h2,
+.blog-markdown h3 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 1.25em;
+  margin-bottom: 0.35em;
+}
+.blog-markdown p {
+  margin: 0.65em 0;
+}
+.blog-markdown ul,
+.blog-markdown ol {
+  padding-left: 1.25rem;
+  margin: 0.6em 0;
+}
+.blog-markdown li {
+  margin: 0.2em 0;
+}
+.blog-markdown blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  color: var(--muted-foreground);
+  margin: 0.6em 0;
+}
+.blog-markdown code {
+  background: var(--muted);
+  padding: 0.15rem 0.35rem;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+.blog-markdown img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.75em 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.25);
+}
+.blog-markdown a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
 }

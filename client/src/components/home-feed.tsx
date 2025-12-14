@@ -62,17 +62,17 @@ export default function HomeFeed({ topics, filterMode = "A" }: HomeFeedProps) {
   }
 
   return (
-    <div className="pb-20">
-      <div className="space-y-4 px-3">
+    <div className="pb-20 px-1 sm:px-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {sortedTopics.map(({ topic, isFeatured, isNew }) => {
           const modeColor = modeColors[topic.mode] || modeColors.A;
           const topItems = topic.items.slice().sort((a, b) => (b.eloScore || 0) - (a.eloScore || 0)).slice(0, 2);
 
           return (
-            <div
+            <button
               key={topic.id}
               onClick={() => navigate(getModePlayPath(topic))}
-              className="cursor-pointer w-full aspect-square max-w-[500px] mx-auto"
+              className="cursor-pointer w-full h-full text-left"
             >
               <NeoCard className={`relative overflow-hidden active:translate-x-1 active:translate-y-1 active:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all p-0 ${modeColor.bg} h-full`}>
                 {/* Cute Flag Badges */}
@@ -94,7 +94,7 @@ export default function HomeFeed({ topics, filterMode = "A" }: HomeFeedProps) {
                 {/* Main Content */}
                 <div className="h-full relative">
                   {/* Images Grid */}
-                  <div className="grid grid-cols-2 h-full">
+                  <div className="grid grid-cols-2 h-full min-h-[220px]">
                     {topItems.map((item, idx) => (
                       <div key={item.id} className="relative">
                         <img
@@ -133,7 +133,7 @@ export default function HomeFeed({ topics, filterMode = "A" }: HomeFeedProps) {
                   </div>
                 )}
               </NeoCard>
-            </div>
+            </button>
           );
         })}
       </div>

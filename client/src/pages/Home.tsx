@@ -89,38 +89,38 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="pt-4 pb-6 space-y-4 px-3">
-        <div className="flex items-center justify-between">
-          <div>
+      <main className="container mx-auto pt-6 pb-10 space-y-6 px-4 lg:px-8">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-1">
             <p className="text-[11px] uppercase text-muted-foreground tracking-wide">랭킹공장</p>
-            <h1 className="font-heading text-2xl">오늘의 투표</h1>
-            <p className="text-xs text-muted-foreground">모바일에 맞춘 카드형 피드</p>
+            <h1 className="font-heading text-2xl md:text-3xl">오늘의 투표</h1>
+            <p className="text-xs text-muted-foreground">모바일 · 데스크톱 모두를 위한 반응형 카드 피드</p>
           </div>
-          <div className="flex gap-2">
-            <NeoButton variant="outline" size="sm" onClick={() => navigate('/games')}>
+          <div className="flex gap-2 md:gap-3">
+            <NeoButton variant="outline" size="sm" className="md:px-4" onClick={() => navigate('/games')}>
               🎮 게임
             </NeoButton>
             {!user && (
-              <NeoButton variant="outline" size="sm" onClick={() => navigate('/login')}>
+              <NeoButton variant="outline" size="sm" className="md:px-4" onClick={() => navigate('/login')}>
                 로그인
               </NeoButton>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => navigate(`/?mode=${tab.key}`)}
-              className={`rounded-md border-2 border-black px-2 py-2 text-left transition-all ${
+              className={`rounded-md border-2 border-black px-3 py-2 text-left transition-all ${
                 filterMode === tab.key
                   ? 'bg-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                   : 'bg-white hover:bg-muted'
               }`}
             >
-              <div className="font-heading text-sm">{tab.label}</div>
-              <div className="text-[10px] text-muted-foreground leading-tight">{tab.desc}</div>
+              <div className="font-heading text-sm md:text-base">{tab.label}</div>
+              <div className="text-[10px] md:text-xs text-muted-foreground leading-tight">{tab.desc}</div>
             </button>
           ))}
         </div>

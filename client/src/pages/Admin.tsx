@@ -90,8 +90,8 @@ export default function Admin() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-6">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 py-8">
+      <div className="container mx-auto px-4 lg:px-8 space-y-8">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs text-slate-500 uppercase">Rank Factory Admin</p>
@@ -116,7 +116,7 @@ export default function Admin() {
           </div>
         </NeoCard>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {['A', 'B', 'C', 'D'].map((mode) => (
             <NeoCard key={mode} className="p-4 bg-white border-2 border-black">
               <div className="flex items-center justify-between mb-3">

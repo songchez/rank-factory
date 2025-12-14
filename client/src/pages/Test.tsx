@@ -98,60 +98,62 @@ export default function Test() {
     : null;
 
   return (
-    <div className="min-h-screen bg-background px-3 py-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[11px] text-muted-foreground uppercase">{topic.category}</p>
-          <h1 className="font-heading text-2xl">{topic.title}</h1>
-          <p className="text-xs text-muted-foreground">
-            질문 {questions.length}개 · 점수 {score}
-          </p>
-        </div>
-        <NeoButton variant="outline" size="sm" onClick={() => navigate('/')}>
-          홈
-        </NeoButton>
-      </div>
-
-      {locked && (
-        <NeoCard className="p-3 bg-white border-dashed border-2 border-black/50 text-sm text-muted-foreground">
-          <div className="mb-2">로그인 후 테스트에 참여할 수 있습니다. 우측 하단 로그인 탭을 이용하세요.</div>
-          <NeoButton size="sm" onClick={() => navigate('/login')}>
-            로그인하기
-          </NeoButton>
-        </NeoCard>
-      )}
-
-      <div className="w-full h-2 bg-muted border-2 border-black rounded-full overflow-hidden">
-        <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
-      </div>
-
-      {!finished ? (
-        <NeoCard className="p-4 space-y-3">
-          <div className="text-xs text-muted-foreground">Q{index + 1}/{questions.length}</div>
-          <div className="font-heading text-lg leading-snug">{questions[index].prompt}</div>
-          <div className="grid gap-2">
-            {questions[index].choices.map((choice) => (
-              <button
-                key={choice.text}
-                onClick={() => handleChoice(choice)}
-                disabled={locked}
-                className={`border-2 border-black bg-white hover:bg-primary/40 active:translate-y-0.5 transition-all px-3 py-3 text-left ${locked ? 'opacity-60 cursor-not-allowed' : ''}`}
-              >
-                <div className="font-heading">{choice.text}</div>
-              </button>
-            ))}
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto px-4 lg:px-8 py-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[11px] text-muted-foreground uppercase">{topic.category}</p>
+            <h1 className="font-heading text-2xl">{topic.title}</h1>
+            <p className="text-xs text-muted-foreground">
+              질문 {questions.length}개 · 점수 {score}
+            </p>
           </div>
-        </NeoCard>
-      ) : (
-        <NeoCard className="p-4 space-y-3">
-          <p className="text-xs text-muted-foreground">테스트 결과</p>
-          <h2 className="font-heading text-xl">{result?.label}</h2>
-          <p className="text-sm text-muted-foreground">{result?.summary}</p>
-          <NeoButton className="w-full" onClick={() => { setIndex(0); setScore(0); setFinished(false); }}>
-            다시 하기
+          <NeoButton variant="outline" size="sm" onClick={() => navigate('/')}>
+            홈
           </NeoButton>
-        </NeoCard>
-      )}
+        </div>
+
+        {locked && (
+          <NeoCard className="p-3 bg-white border-dashed border-2 border-black/50 text-sm text-muted-foreground">
+            <div className="mb-2">로그인 후 테스트에 참여할 수 있습니다. 우측 하단 로그인 탭을 이용하세요.</div>
+            <NeoButton size="sm" onClick={() => navigate('/login')}>
+              로그인하기
+            </NeoButton>
+          </NeoCard>
+        )}
+
+        <div className="w-full h-2 bg-muted border-2 border-black rounded-full overflow-hidden">
+          <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
+        </div>
+
+        {!finished ? (
+          <NeoCard className="p-4 space-y-3">
+            <div className="text-xs text-muted-foreground">Q{index + 1}/{questions.length}</div>
+            <div className="font-heading text-lg leading-snug">{questions[index].prompt}</div>
+            <div className="grid gap-2">
+              {questions[index].choices.map((choice) => (
+                <button
+                  key={choice.text}
+                  onClick={() => handleChoice(choice)}
+                  disabled={locked}
+                  className={`border-2 border-black bg-white hover:bg-primary/40 active:translate-y-0.5 transition-all px-3 py-3 text-left ${locked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                >
+                  <div className="font-heading">{choice.text}</div>
+                </button>
+              ))}
+            </div>
+          </NeoCard>
+        ) : (
+          <NeoCard className="p-4 space-y-3">
+            <p className="text-xs text-muted-foreground">테스트 결과</p>
+            <h2 className="font-heading text-xl">{result?.label}</h2>
+            <p className="text-sm text-muted-foreground">{result?.summary}</p>
+            <NeoButton className="w-full" onClick={() => { setIndex(0); setScore(0); setFinished(false); }}>
+              다시 하기
+            </NeoButton>
+          </NeoCard>
+        )}
+      </main>
     </div>
   );
 }

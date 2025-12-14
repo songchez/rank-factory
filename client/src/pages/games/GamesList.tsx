@@ -70,7 +70,7 @@ export default function GamesList() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <main className="px-3 py-4 space-y-4">
+      <main className="container mx-auto px-4 lg:px-8 py-4 space-y-4">
         <div className="flex items-center justify-between">
           <div className="px-1">
             <p className="text-xs text-muted-foreground">순위 게임</p>
@@ -81,7 +81,7 @@ export default function GamesList() {
           </NeoButton>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {games.map((game) => (
             <Link key={game.id} to={game.href}>
               <NeoCard className="aspect-square overflow-hidden active:translate-x-1 active:translate-y-1 active:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer p-0 relative group">
