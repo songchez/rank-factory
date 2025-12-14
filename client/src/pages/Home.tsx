@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import HomeFeed from '../components/home-feed';
 import { NeoButton } from '../components/neo-button';
@@ -41,13 +41,6 @@ export default function Home() {
       cancelled = true;
     };
   }, []);
-
-  const tabs = useMemo(() => ([
-    { key: 'A', label: '배틀', desc: '둘 중 하나만 고르기' },
-    { key: 'B', label: '테스트', desc: '질문에 답하고 결과 확인' },
-    { key: 'C', label: '티어', desc: '등급을 매겨보는 시간' },
-    { key: 'D', label: '팩트', desc: '리스트/아카이브' },
-  ]), []);
 
   if (loading) {
     return (
@@ -101,23 +94,6 @@ export default function Home() {
               로그인
             </NeoButton>
           )}
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => navigate(`/?mode=${tab.key}`)}
-              className={`rounded-md border-2 border-black px-3 py-2 text-left transition-all ${
-                filterMode === tab.key
-                  ? 'bg-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                  : 'bg-white hover:bg-muted'
-              }`}
-            >
-              <div className="font-heading text-sm md:text-base">{tab.label}</div>
-              <div className="text-[10px] md:text-xs text-muted-foreground leading-tight">{tab.desc}</div>
-            </button>
-          ))}
         </div>
 
         <HomeFeed topics={topics} filterMode={filterMode} />

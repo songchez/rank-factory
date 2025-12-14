@@ -38,51 +38,25 @@ export function DesktopHeader() {
         </Link>
         <NavigationMenu>
           <NavigationMenuList>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                href="/"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/');
-                }}
-                className={navigationMenuTriggerStyle()}
-              >
-                오늘의 투표
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                href="/games"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/games');
-                }}
-                className={navigationMenuTriggerStyle()}
-              >
-                게임
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                href="/fact"
-                onClick={(e) => e.preventDefault()}
-                className={navigationMenuTriggerStyle("text-muted-foreground cursor-not-allowed")}
-              >
-                팩트
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                href="/admin"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/admin');
-                }}
-                className={navigationMenuTriggerStyle()}
-              >
-                관리자
-              </NavigationMenuLink>
-            </NavigationMenuItem>
+            {[
+              { key: 'A', label: '배틀' },
+              { key: 'B', label: '테스트' },
+              { key: 'C', label: '티어' },
+              { key: 'D', label: '팩트' },
+            ].map((item) => (
+              <NavigationMenuItem key={item.key}>
+                <NavigationMenuLink
+                  href={`/?mode=${item.key}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate(`/?mode=${item.key}`);
+                  }}
+                  className={navigationMenuTriggerStyle()}
+                >
+                  {item.label}
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            ))}
           </NavigationMenuList>
         </NavigationMenu>
       </div>
