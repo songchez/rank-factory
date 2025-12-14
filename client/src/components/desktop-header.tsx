@@ -43,13 +43,18 @@ export function DesktopHeader() {
               { key: 'B', label: '테스트' },
               { key: 'C', label: '티어' },
               { key: 'D', label: '팩트' },
+              { key: 'G', label: '게임', path: '/games' },
             ].map((item) => (
               <NavigationMenuItem key={item.key}>
                 <NavigationMenuLink
-                  href={`/?mode=${item.key}`}
+                  href={item.path || `/?mode=${item.key}`}
                   onClick={(e) => {
                     e.preventDefault();
-                    navigate(`/?mode=${item.key}`);
+                    if (item.path) {
+                      navigate(item.path);
+                    } else {
+                      navigate(`/?mode=${item.key}`);
+                    }
                   }}
                   className={navigationMenuTriggerStyle()}
                 >
