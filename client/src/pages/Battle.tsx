@@ -197,7 +197,7 @@ export default function Battle() {
       <div className="absolute top-2 left-2 z-20 space-y-1">
         <div className="text-xs uppercase text-white/70">{topic.category}</div>
         <div className="font-heading text-lg">{topic.title}</div>
-        <div className="text-xs text-white/70">{bracketLabel}</div>
+        <div className="text-xs text-white/70">{bracketLabel} · Round {roundNumber}</div>
       </div>
 
       {locked && (
