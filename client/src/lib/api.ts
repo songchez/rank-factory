@@ -80,6 +80,33 @@ export async function adminCreateTopic(prompt: string) {
   });
 }
 
+export async function adminCreateManualTopic(payload: {
+  title: string;
+  category?: string;
+  view_type?: 'battle' | 'test' | 'tier' | 'fact';
+  mode?: string;
+  items: Array<{
+    name: string;
+    image_url?: string;
+    description?: string;
+    external_url?: string;
+    meta?: Record<string, unknown>;
+  }>;
+  meta?: Record<string, unknown>;
+}) {
+  return fetcher<{ success: boolean; data: any }>('/api/admin/topics', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function adminUploadImage(payload: { dataUrl: string; filename?: string }) {
+  return fetcher<{ success: boolean; url: string; path: string }>('/api/admin/upload-image', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function adminUpdateTopic(id: string, updates: any) {
   return fetcher<{ success: boolean; data: any }>(`/api/admin/topics/${id}`, {
     method: 'PUT',
