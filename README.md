@@ -109,18 +109,50 @@ bun run preview
 
 ## 🚢 Deployment
 
-Deploy to Cloudflare Pages:
+### GitHub Integration (Recommended)
+
+This project is configured to deploy automatically via GitHub integration:
+
+1. **Connect to Cloudflare Pages**
+   - Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
+   - Navigate to **Workers & Pages** → **Create application** → **Pages** → **Connect to Git**
+   - Select the `rank-factory` repository
+
+2. **Build Settings**
+   ```
+   Framework preset: None
+   Build command: bun run build:client
+   Build output directory: dist/client
+   Root directory: /
+   ```
+
+3. **Environment Variables**
+
+   Add these in **Settings** → **Environment variables** for both Production and Preview:
+
+   ```env
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+   GOOGLE_API_KEY=your_google_api_key
+   GOOGLE_TEXT_MODEL=gemini-2.5-flash
+   GOOGLE_IMAGE_MODEL=gemini-2.5-flash-image
+   NODE_ENV=production (for production) or development (for preview)
+   ```
+
+4. **Auto-Deploy**
+   - Push to `main` branch → automatic production deployment
+   - Push to any other branch → automatic preview deployment
+
+### Manual Deployment (Alternative)
+
+For manual deployments using Wrangler CLI:
 
 ```bash
 bun run deploy
 ```
-
-### Environment Variables (Production)
-
-Set these in Cloudflare Pages dashboard:
-1. Go to your Cloudflare Pages project
-2. Settings → Environment variables
-3. Add all variables from `.env.local`
 
 ## 📖 API Routes
 

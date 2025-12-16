@@ -1,9 +1,5 @@
+# Cloudflare Pages configuration
+# Most settings are configured via GitHub integration in Cloudflare dashboard
 name = "rank-factory"
 compatibility_date = "2025-12-09"
 pages_build_output_dir = "dist/client"
-
-[env.production]
-name = "rank-factory"
-
-[env.preview]
-name = "rank-factory-preview"
