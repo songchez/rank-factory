@@ -6,7 +6,6 @@ import authRoutes from './routes/auth';
 import topicsRoutes from './routes/topics';
 import rankingRoutes from './routes/ranking';
 import adminRoutes from './routes/admin';
-import seedRoutes from './routes/seed';
 import gamesRoutes from './routes/games';
 import commentsRoutes from './routes/comments';
 
@@ -38,7 +37,6 @@ app.route('/api/auth', authRoutes);
 app.route('/api/topics', topicsRoutes);
 app.route('/api/ranking', rankingRoutes);
 app.route('/api/admin', adminRoutes);
-app.route('/api/seed', seedRoutes);
 app.route('/api/games', gamesRoutes);
 app.route('/api/comments', commentsRoutes);
 

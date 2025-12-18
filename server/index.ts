@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { serveStatic } from 'hono/bun';
 import app from './app';
+import seedRoutes from './routes/seed';
 
 const port = process.env.PORT || 8787;
 
@@ -9,6 +10,9 @@ const devApp = new Hono();
 
 // Mount API routes
 devApp.route('/', app);
+
+// Seed routes only available in local development
+devApp.route('/api/seed', seedRoutes);
 
 // Serve static files from dist/client
 devApp.use('/*', serveStatic({ root: './dist/client' }));
