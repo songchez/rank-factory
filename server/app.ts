@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { serveStatic } from 'hono/bun';
 
 import authRoutes from './routes/auth';
 import topicsRoutes from './routes/topics';
@@ -33,7 +34,7 @@ app.use('*', cors({
 // Health check
 app.get('/api/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// Routes
+// API Routes
 app.route('/api/auth', authRoutes);
 app.route('/api/topics', topicsRoutes);
 app.route('/api/ranking', rankingRoutes);
@@ -41,5 +42,11 @@ app.route('/api/admin', adminRoutes);
 app.route('/api/seed', seedRoutes);
 app.route('/api/games', gamesRoutes);
 app.route('/api/comments', commentsRoutes);
+
+// Serve static files from dist/client
+app.use('/*', serveStatic({ root: './dist/client' }));
+
+// SPA fallback - serve index.html for all other routes
+app.get('*', serveStatic({ path: './dist/client/index.html' }));
 
 export default app;

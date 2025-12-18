@@ -2,4 +2,5 @@
 # Most settings are configured via GitHub integration in Cloudflare dashboard
 name = "rank-factory"
 compatibility_date = "2025-12-09"
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist/client"
