@@ -4,3 +4,14 @@ name = "rank-factory"
 compatibility_date = "2025-12-09"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist/client"
+
+# Environment variables should be set via Cloudflare Dashboard:
+# Settings → Environment variables → Production
+# Required vars:
+# - SUPABASE_URL
+# - SUPABASE_PUBLISHABLE_KEY
+# - SUPABASE_SECRET_KEY
+# - GOOGLE_API_KEY
+# - GOOGLE_TEXT_MODEL
+# - GOOGLE_IMAGE_MODEL
+# - NODE_ENV

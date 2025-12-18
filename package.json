@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "bun run dev:server & bun run dev:client",
-    "dev:server": "wrangler pages dev functions --port 8787",
+    "dev:server": "bun run server/index.ts",
     "dev:client": "vite --config client/vite.config.ts",
     "build": "bun run build:client",
     "build:client": "vite build --config client/vite.config.ts",
     "preview": "wrangler pages dev dist/client",
-    "deploy": "bun run build:client && wrangler pages deploy dist/client",
+    "deploy": "bun run build:client && bunx wrangler pages deploy dist/client",
     "start": "bun run server/index.ts",
     "start:prod": "bun run build && bun run start",
     "lint": "eslint client/src server"
@@ -84,6 +84,6 @@
     "tw-animate-css": "1.3.3",
     "typescript": "^5.9.3",
     "vite": "^7.2.7",
-    "wrangler": "^4.54.0"
+    "wrangler": "^4.56.0"
   }
 }
