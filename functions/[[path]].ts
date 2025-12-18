@@ -1,9 +1,4 @@
-import app from "../server/app";
+import { handle } from 'hono/cloudflare-pages';
+import app from '../server/app';
 
-// Cloudflare Pages Functions handler
-export const onRequest = (context: any) =>
-  app.fetch(
-    context.request as Request,
-    context.env,
-    context
-  );
+export const onRequest = handle(app);
