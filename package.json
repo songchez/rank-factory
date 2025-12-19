@@ -12,6 +12,7 @@
     "deploy": "bun run build:client && bunx wrangler pages deploy dist/client",
     "start": "bun run server/index.ts",
     "start:prod": "bun run build && bun run start",
+    "seed": "bun run scripts/seed/seed.ts",
     "lint": "eslint client/src server"
   },
   "dependencies": {
