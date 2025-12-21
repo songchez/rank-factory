@@ -25,6 +25,7 @@ create table if not exists ranking_items (
   image_url text,
   description text,
   external_url text,
+  youtube_url text,
   meta jsonb default '{}'::jsonb,
   rank_order int default 0,
   elo_score int default 1200,
@@ -36,6 +37,7 @@ create table if not exists ranking_items (
 
 alter table ranking_items add column if not exists description text;
 alter table ranking_items add column if not exists external_url text;
+alter table ranking_items add column if not exists youtube_url text;
 alter table ranking_items add column if not exists meta jsonb default '{}'::jsonb;
 alter table ranking_items add column if not exists rank_order int default 0;
 
@@ -111,6 +113,21 @@ create table if not exists game_scores (
 );
 
 alter table game_scores enable row level security;
+
+-- Topic likes
+create table if not exists topic_likes (
+  id uuid default gen_random_uuid() primary key,
+  topic_id uuid references ranking_topics(id) on delete cascade,
+  user_id text,
+  session_id text not null,
+  created_at timestamptz default now(),
+  unique(topic_id, session_id)
+);
+
+alter table topic_likes enable row level security;
+
+-- Add like_count to ranking_topics
+alter table ranking_topics add column if not exists like_count int default 0;
 
 -- Create policies (Public Read/Write for demo; tighten for prod). Guard with existence checks to make re-runs idempotent.
 do $$ begin
@@ -201,6 +218,30 @@ end $$;
 do $$ begin
   if not exists (select 1 from pg_policies where policyname = 'Public insert game scores' and tablename = 'game_scores') then
     create policy "Public insert game scores" on game_scores for insert with check (true);
+  end if;
+end $$;
+
+do $$ begin
+  if not exists (select 1 from pg_policies where policyname = 'Public read topic likes' and tablename = 'topic_likes') then
+    create policy "Public read topic likes" on topic_likes for select using (true);
+  end if;
+end $$;
+
+do $$ begin
+  if not exists (select 1 from pg_policies where policyname = 'Public insert topic likes' and tablename = 'topic_likes') then
+    create policy "Public insert topic likes" on topic_likes for insert with check (true);
+  end if;
+end $$;
+
+do $$ begin
+  if not exists (select 1 from pg_policies where policyname = 'Public delete topic likes' and tablename = 'topic_likes') then
+    create policy "Public delete topic likes" on topic_likes for delete using (true);
+  end if;
+end $$;
+
+do $$ begin
+  if not exists (select 1 from pg_policies where policyname = 'Public update topics' and tablename = 'ranking_topics') then
+    create policy "Public update topics" on ranking_topics for update using (true);
   end if;
 end $$;
 

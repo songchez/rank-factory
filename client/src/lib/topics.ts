@@ -53,6 +53,8 @@ export function normalizeItem(raw: any): RankingItem {
     topic_id: raw.topic_id ?? raw.topicId,
     imageUrl: raw.image_url ?? raw.imageUrl,
     image_url: raw.image_url ?? raw.imageUrl,
+    youtubeUrl: raw.youtube_url ?? raw.youtubeUrl,
+    youtube_url: raw.youtube_url ?? raw.youtubeUrl,
     externalUrl: raw.external_url ?? raw.externalUrl,
     rankOrder: raw.rankOrder ?? raw.rank_order ?? 0,
     eloScore: raw.elo_score ?? raw.eloScore ?? 1200,

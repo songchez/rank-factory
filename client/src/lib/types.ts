@@ -9,6 +9,9 @@ export interface RankingItem {
   image_url?: string;
   description?: string;
   externalUrl?: string;
+  external_url?: string;
+  youtubeUrl?: string;
+  youtube_url?: string;
   meta?: Record<string, unknown>;
   rankOrder?: number;
   eloScore?: number;
@@ -35,6 +38,8 @@ export interface RankingTopic {
   contentJson?: Record<string, unknown>;
   createdAt?: string;
   created_at?: string;
+  likeCount?: number;
+  like_count?: number;
   items: RankingItem[];
 }
 

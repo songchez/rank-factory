@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTopic } from '../hooks/useTopic';
 import { NeoCard } from '../components/neo-card';
 import { NeoButton } from '../components/neo-button';
+import { ShareButton } from '../components/share-button';
 
 const tierLabels = ['S', 'A', 'B', 'C', 'F'] as const;
 
@@ -51,9 +52,17 @@ export default function Tier() {
             <h1 className="font-heading text-2xl">{topic.title}</h1>
             <p className="text-xs text-muted-foreground">나만의 티어를 참고해보세요</p>
           </div>
-          <NeoButton variant="outline" size="sm" onClick={() => navigate('/')}>
-            홈
-          </NeoButton>
+          <div className="flex gap-2">
+            <NeoButton variant="outline" size="sm" onClick={() => navigate('/')}>
+              홈
+            </NeoButton>
+            <ShareButton
+              compact
+              showLabel
+              title={topic.title}
+              text={`티어 랭킹을 확인해보세요!`}
+            />
+          </div>
         </div>
 
         <div className="space-y-3">

@@ -12,7 +12,7 @@ import {
 } from "../lib/api";
 import { normalizeTopic } from "../lib/topics";
 
-type ManualItem = { id?: string; name: string; image_url?: string };
+type ManualItem = { id?: string; name: string; image_url?: string; youtube_url?: string };
 
 const cardClass =
   "rounded-2xl border border-slate-200 bg-white shadow-sm p-6 md:p-7";
@@ -60,8 +60,8 @@ export default function Admin() {
     mode: "A",
   });
   const [manualItems, setManualItems] = useState<ManualItem[]>([
-    { name: "", image_url: "" },
-    { name: "", image_url: "" },
+    { name: "", image_url: "", youtube_url: "" },
+    { name: "", image_url: "", youtube_url: "" },
   ]);
 
   const [editId, setEditId] = useState<string>("");
@@ -126,26 +126,30 @@ export default function Admin() {
     }
   };
 
-  const handleManualItemChange = (index: number, key: "name" | "image_url", value: string) => {
+  const handleManualItemChange = (index: number, key: "name" | "image_url" | "youtube_url", value: string) => {
     setManualItems((prev) =>
       prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item))
     );
   };
 
-  const handleEditItemChange = (index: number, key: "name" | "image_url", value: string) => {
+  const handleEditItemChange = (index: number, key: "name" | "image_url" | "youtube_url", value: string) => {
     setEditItems((prev) =>
       prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item))
     );
   };
 
-  const addManualItem = () => setManualItems((prev) => [...prev, { name: "", image_url: "" }]);
-  const addEditItem = () => setEditItems((prev) => [...prev, { name: "", image_url: "" }]);
+  const addManualItem = () => setManualItems((prev) => [...prev, { name: "", image_url: "", youtube_url: "" }]);
+  const addEditItem = () => setEditItems((prev) => [...prev, { name: "", image_url: "", youtube_url: "" }]);
 
   const removeManualItem = (index: number) => {
-    setManualItems((prev) => (prev.length <= 1 ? prev : prev.filter((_, idx) => idx !== index)));
+    // test 모드는 아이템이 없어도 되므로 모두 삭제 가능
+    const minItems = manualForm.viewType === "test" ? 0 : 1;
+    setManualItems((prev) => (prev.length <= minItems ? prev : prev.filter((_, idx) => idx !== index)));
   };
   const removeEditItem = (index: number) => {
-    setEditItems((prev) => (prev.length <= 1 ? prev : prev.filter((_, idx) => idx !== index)));
+    // test 모드는 아이템이 없어도 되므로 모두 삭제 가능
+    const minItems = editForm.viewType === "test" ? 0 : 1;
+    setEditItems((prev) => (prev.length <= minItems ? prev : prev.filter((_, idx) => idx !== index)));
   };
 
   const fileToDataUrl = (file: File) =>
@@ -231,10 +235,11 @@ export default function Admin() {
     }
 
     const normalizedItems = manualItems
-      .map((item) => ({ name: item.name.trim(), image_url: item.image_url?.trim() }))
+      .map((item) => ({ name: item.name.trim(), image_url: item.image_url?.trim(), youtube_url: item.youtube_url?.trim() }))
       .filter((item) => item.name);
 
-    const minItems = manualForm.viewType === "fact" ? 1 : 2;
+    // test(B) 모드는 아이템이 없어도 됨 (질문만으로 구성 가능)
+    const minItems = manualForm.viewType === "test" ? 0 : manualForm.viewType === "fact" ? 1 : 2;
     if (normalizedItems.length < minItems) {
       setCreateError(`아이템을 최소 ${minItems}개 입력하세요.`);
       return;
@@ -258,8 +263,8 @@ export default function Admin() {
       });
       setUploadError(null);
       setManualItems([
-        { name: "", image_url: "" },
-        { name: "", image_url: "" },
+        { name: "", image_url: "", youtube_url: "" },
+        { name: "", image_url: "", youtube_url: "" },
       ]);
       await loadTopics();
     } catch (err) {
@@ -294,6 +299,7 @@ export default function Admin() {
           id: item.id,
           name: item.name || "",
           image_url: item.image_url || item.imageUrl || "",
+          youtube_url: item.youtube_url || item.youtubeUrl || "",
         }))
       );
       const questions = ((topic.meta as any)?.questions || []).map((q: any) => ({
@@ -325,10 +331,11 @@ export default function Admin() {
     }
 
     const normalizedItems = editItems
-      .map((item) => ({ id: item.id, name: item.name.trim(), image_url: item.image_url?.trim() }))
+      .map((item) => ({ id: item.id, name: item.name.trim(), image_url: item.image_url?.trim(), youtube_url: item.youtube_url?.trim() }))
       .filter((item) => item.name);
 
-    const minItems = editForm.viewType === "fact" ? 1 : 2;
+    // test(B) 모드는 아이템이 없어도 됨 (질문만으로 구성 가능)
+    const minItems = editForm.viewType === "test" ? 0 : editForm.viewType === "fact" ? 1 : 2;
     if (normalizedItems.length < minItems) {
       setEditError(`아이템을 최소 ${minItems}개 입력하세요.`);
       return;
@@ -651,69 +658,83 @@ export default function Admin() {
                 {manualItems.map((item, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-1 md:grid-cols-12 gap-3 rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3"
+                    className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 space-y-3"
                   >
-                    <div className="md:col-span-4 space-y-1">
-                      <label className="text-xs font-semibold text-slate-700">이름</label>
-                      <input
-                        type="text"
-                        value={item.name}
-                        onChange={(e) => handleManualItemChange(idx, "name", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
-                        placeholder="예: 신전떡볶이"
-                        required
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                      <div className="md:col-span-4 space-y-1">
+                        <label className="text-xs font-semibold text-slate-700">이름</label>
+                        <input
+                          type="text"
+                          value={item.name}
+                          onChange={(e) => handleManualItemChange(idx, "name", e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                          placeholder="예: 신전떡볶이"
+                          required={manualForm.viewType !== "test"}
+                        />
+                      </div>
+                      <div className="md:col-span-4 space-y-1">
+                        <label className="text-xs font-semibold text-slate-700">이미지 URL</label>
+                        <input
+                          type="text"
+                          value={item.image_url || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            handleManualItemChange(idx, "image_url", value);
+                            if (value.startsWith("data:image")) {
+                              handleUploadImage("manual", idx, value);
+                            }
+                          }}
+                          onPaste={(e) => {
+                            const file = extractClipboardFile(e);
+                            if (file) {
+                              e.preventDefault();
+                              handleUploadImage("manual", idx, file);
+                            }
+                          }}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                          placeholder="붙여넣기나 파일 업로드"
+                        />
+                      </div>
+                      <div className="md:col-span-2 flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-slate-700">파일 업로드</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleUploadImage("manual", idx, e.target.files?.[0])}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs bg-white"
+                        />
+                        {uploadingKey === `manual-${idx}` && (
+                          <span className="text-[11px] text-slate-500">업로드 중...</span>
+                        )}
+                      </div>
+                      <div className="md:col-span-1 flex items-end">
+                        {renderPreview(item.image_url)}
+                      </div>
+                      <div className="md:col-span-1 flex items-end">
+                        {(manualForm.viewType === "test" ? manualItems.length > 0 : manualItems.length > 1) && (
+                          <Button variant="outline" type="button" onClick={() => removeManualItem(idx)} className="w-full">
+                            삭제
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <div className="md:col-span-4 space-y-1">
-                      <label className="text-xs font-semibold text-slate-700">이미지 URL</label>
-                      <input
-                        type="text"
-                        value={item.image_url || ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          handleManualItemChange(idx, "image_url", value);
-                          if (value.startsWith("data:image")) {
-                            handleUploadImage("manual", idx, value);
-                          }
-                        }}
-                        onPaste={(e) => {
-                          const file = extractClipboardFile(e);
-                          if (file) {
-                            e.preventDefault();
-                            handleUploadImage("manual", idx, file);
-                          }
-                        }}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
-                        placeholder="붙여넣기나 파일 업로드를 사용할 수 있습니다."
-                      />
-                    </div>
-                    <div className="md:col-span-2 flex flex-col gap-2">
-                      <label className="text-xs font-semibold text-slate-700">파일 업로드</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleUploadImage("manual", idx, e.target.files?.[0])}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs bg-white"
-                      />
-                      {uploadingKey === `manual-${idx}` && (
-                        <span className="text-[11px] text-slate-500">업로드 중...</span>
-                      )}
-                    </div>
-                    <div className="md:col-span-1 flex items-end">
-                      {renderPreview(item.image_url)}
-                    </div>
-                    <div className="md:col-span-1 flex items-end">
-                      {manualItems.length > 1 && (
-                        <Button variant="outline" type="button" onClick={() => removeManualItem(idx)} className="w-full">
-                          삭제
-                        </Button>
-                      )}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                      <div className="md:col-span-12 space-y-1">
+                        <label className="text-xs font-semibold text-slate-700">YouTube URL (선택사항)</label>
+                        <input
+                          type="text"
+                          value={item.youtube_url || ""}
+                          onChange={(e) => handleManualItemChange(idx, "youtube_url", e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                          placeholder="https://www.youtube.com/watch?v=..."
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
               <p className="text-xs text-slate-500">
-                배틀/퀴즈/티어 모드는 최소 2개, 팩트는 최소 1개 항목이 필요합니다. 이미지 URL은 붙여넣기(클립보드/데이터 URL)나 파일 선택으로 자동 업로드됩니다.
+                배틀/티어 모드는 최소 2개, 팩트는 최소 1개 항목이 필요합니다. 테스트 모드는 아이템이 선택사항입니다 (질문만으로 구성 가능). 이미지 URL은 붙여넣기(클립보드/데이터 URL)나 파일 선택으로 자동 업로드됩니다.
               </p>
             </div>
 
@@ -867,68 +888,82 @@ export default function Admin() {
                 {editItems.map((item, idx) => (
                   <div
                     key={item.id || idx}
-                    className="grid grid-cols-1 md:grid-cols-12 gap-3 rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3"
+                    className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 space-y-3"
                   >
-                    <div className="md:col-span-4 space-y-1">
-                      <label className="text-xs font-semibold text-slate-700">이름</label>
-                      <input
-                        type="text"
-                        value={item.name}
-                        onChange={(e) => handleEditItemChange(idx, "name", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
-                        placeholder="아이템 이름"
-                        required
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                      <div className="md:col-span-4 space-y-1">
+                        <label className="text-xs font-semibold text-slate-700">이름</label>
+                        <input
+                          type="text"
+                          value={item.name}
+                          onChange={(e) => handleEditItemChange(idx, "name", e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                          placeholder="아이템 이름"
+                          required={editForm.viewType !== "test"}
+                        />
+                      </div>
+                      <div className="md:col-span-4 space-y-1">
+                        <label className="text-xs font-semibold text-slate-700">이미지 URL</label>
+                        <input
+                          type="text"
+                          value={item.image_url || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            handleEditItemChange(idx, "image_url", value);
+                            if (value.startsWith("data:image")) {
+                              handleUploadImage("edit", idx, value);
+                            }
+                          }}
+                          onPaste={(e) => {
+                            const file = extractClipboardFile(e);
+                            if (file) {
+                              e.preventDefault();
+                              handleUploadImage("edit", idx, file);
+                            }
+                          }}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                          placeholder="붙여넣기나 파일 업로드"
+                        />
+                      </div>
+                      <div className="md:col-span-2 flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-slate-700">파일 업로드</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleUploadImage("edit", idx, e.target.files?.[0])}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs bg-white"
+                        />
+                        {uploadingKey === `edit-${idx}` && (
+                          <span className="text-[11px] text-slate-500">업로드 중...</span>
+                        )}
+                      </div>
+                      <div className="md:col-span-1 flex items-end">
+                        {renderPreview(item.image_url)}
+                      </div>
+                      <div className="md:col-span-1 flex items-end">
+                        {(editForm.viewType === "test" ? editItems.length > 0 : editItems.length > 1) && (
+                          <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => removeEditItem(idx)}
+                            className="w-full"
+                          >
+                            삭제
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <div className="md:col-span-4 space-y-1">
-                      <label className="text-xs font-semibold text-slate-700">이미지 URL</label>
-                      <input
-                        type="text"
-                        value={item.image_url || ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          handleEditItemChange(idx, "image_url", value);
-                          if (value.startsWith("data:image")) {
-                            handleUploadImage("edit", idx, value);
-                          }
-                        }}
-                        onPaste={(e) => {
-                          const file = extractClipboardFile(e);
-                          if (file) {
-                            e.preventDefault();
-                            handleUploadImage("edit", idx, file);
-                          }
-                        }}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
-                        placeholder="붙여넣기나 파일 업로드를 사용할 수 있습니다."
-                      />
-                    </div>
-                    <div className="md:col-span-2 flex flex-col gap-2">
-                      <label className="text-xs font-semibold text-slate-700">파일 업로드</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleUploadImage("edit", idx, e.target.files?.[0])}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs bg-white"
-                      />
-                      {uploadingKey === `edit-${idx}` && (
-                        <span className="text-[11px] text-slate-500">업로드 중...</span>
-                      )}
-                    </div>
-                    <div className="md:col-span-1 flex items-end">
-                      {renderPreview(item.image_url)}
-                    </div>
-                    <div className="md:col-span-1 flex items-end">
-                      {editItems.length > 1 && (
-                        <Button
-                          variant="outline"
-                          type="button"
-                          onClick={() => removeEditItem(idx)}
-                          className="w-full"
-                        >
-                          삭제
-                        </Button>
-                      )}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                      <div className="md:col-span-12 space-y-1">
+                        <label className="text-xs font-semibold text-slate-700">YouTube URL (선택사항)</label>
+                        <input
+                          type="text"
+                          value={item.youtube_url || ""}
+                          onChange={(e) => handleEditItemChange(idx, "youtube_url", e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                          placeholder="https://www.youtube.com/watch?v=..."
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -937,7 +972,7 @@ export default function Admin() {
                 )}
               </div>
               <p className="text-xs text-slate-500">
-                배틀/퀴즈/티어 모드는 최소 2개, 팩트는 최소 1개 항목이 필요합니다. 이미지 URL은 붙여넣기(클립보드/데이터 URL)나 파일 선택으로 자동 업로드됩니다.
+                배틀/티어 모드는 최소 2개, 팩트는 최소 1개 항목이 필요합니다. 테스트 모드는 아이템이 선택사항입니다 (질문만으로 구성 가능). 이미지 URL은 붙여넣기(클립보드/데이터 URL)나 파일 선택으로 자동 업로드됩니다.
               </p>
             </div>
 

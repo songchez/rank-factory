@@ -8,7 +8,8 @@ import { NeoCard } from '../components/neo-card';
 import { useAuth } from '../hooks/useAuth';
 import type { RankingItem } from '../lib/types';
 import Comments from '../components/comments';
-import { Share2 } from 'lucide-react';
+import { ShareButton } from '../components/share-button';
+import { YouTubePlayer } from '../components/youtube-player';
 
 export default function Battle() {
   const { id } = useParams();
@@ -153,24 +154,19 @@ export default function Battle() {
               돌아가기
             </NeoButton>
             <NeoButton
-              variant="secondary"
+              variant="outline"
               size="sm"
-              onClick={() => {
-                const shareData = {
-                  title: topic.title,
-                  text: `토너먼트 결과 - 우승: ${champion.name}`,
-                  url: typeof window !== 'undefined' ? window.location.href : '',
-                };
-                if (navigator.share) {
-                  navigator.share(shareData).catch(() => {});
-                } else if (navigator.clipboard) {
-                  navigator.clipboard.writeText(shareData.url).catch(() => {});
-                }
-              }}
-              className="flex items-center gap-1"
+              onClick={() => window.location.reload()}
+              className="font-fixel"
             >
-              <Share2 className="w-4 h-4" /> 공유
+              🔄 다시하기
             </NeoButton>
+            <ShareButton
+              compact
+              showLabel
+              title={topic.title}
+              text={`토너먼트 결과 - 우승: ${champion.name}`}
+            />
           </div>
         </div>
         <NeoCard className="p-4 space-y-3">
@@ -217,25 +213,42 @@ export default function Battle() {
 
       {displayPair.length === 2 ? (
         <div className="w-full h-full flex">
-          {displayPair.map((item, idx) => (
-            <button
-              key={item.id}
-              onClick={() => handleVote(item.id)}
-              disabled={submitting || locked}
-              className="relative flex-1 overflow-hidden active:scale-[0.99] transition-transform"
-            >
-              <img
-                src={item.imageUrl || item.image_url}
-                alt={item.name}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <div className="text-sm text-white/70">Player {idx + 1}</div>
-                <div className="font-heading text-2xl">{item.name}</div>
+          {displayPair.map((item, idx) => {
+            const youtubeUrl = item.youtubeUrl || item.youtube_url;
+            const imageUrl = item.imageUrl || item.image_url;
+            const hasYouTube = !!youtubeUrl;
+
+            return (
+              <div key={item.id} className="relative flex-1 overflow-hidden">
+                {hasYouTube ? (
+                  <div className="absolute inset-0 w-full h-full">
+                    <YouTubePlayer url={youtubeUrl} fullHeight />
+                  </div>
+                ) : imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={item.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+                {/* 정보 및 선택 버튼 */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
+                  <div className="text-sm text-white/70 mb-2">Player {idx + 1}</div>
+                  <div className="font-heading text-3xl text-white mb-4">{item.name}</div>
+
+                  <button
+                    onClick={() => handleVote(item.id)}
+                    disabled={submitting || locked}
+                    className="pointer-events-auto w-full bg-white text-black font-heading text-xl py-4 px-6 border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    선택하기
+                  </button>
+                </div>
               </div>
-            </button>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="w-full h-full flex items-center justify-center text-white/70 text-sm">

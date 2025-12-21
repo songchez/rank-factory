@@ -14,6 +14,7 @@ async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ error: 'Request failed' }));
+    console.error('API Error:', { url, status: res.status, error });
     throw new Error(error.error || 'Request failed');
   }
 
@@ -176,4 +177,15 @@ export async function postComment(topicId: string, content: string) {
     method: 'POST',
     body: JSON.stringify({ topicId, content }),
   });
+}
+
+// Likes API
+export async function toggleLike(topicId: string) {
+  return fetcher<{ success: boolean; liked: boolean; likeCount: number }>(`/api/topics/${topicId}/like`, {
+    method: 'POST',
+  });
+}
+
+export async function checkLikeStatus(topicId: string) {
+  return fetcher<{ success: boolean; liked: boolean }>(`/api/topics/${topicId}/like/status`);
 }

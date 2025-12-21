@@ -4,6 +4,7 @@ import { useTopic } from '../hooks/useTopic';
 import { NeoCard } from '../components/neo-card';
 import { NeoButton } from '../components/neo-button';
 import { useAuth } from '../hooks/useAuth';
+import { ShareButton } from '../components/share-button';
 
 type Choice = { text: string; weight: number };
 type Question = { id: string; prompt: string; image_url?: string; choices: Choice[] };
@@ -159,9 +160,16 @@ export default function Test() {
             <p className="text-xs text-muted-foreground">테스트 결과</p>
             <h2 className="font-heading text-xl">{result?.label}</h2>
             <p className="text-sm text-muted-foreground">{result?.summary}</p>
-            <NeoButton className="w-full" onClick={() => { setIndex(0); setScore(0); setFinished(false); }}>
-              다시 하기
-            </NeoButton>
+            <div className="flex gap-2 pt-2">
+              <NeoButton className="flex-1" onClick={() => { setIndex(0); setScore(0); setFinished(false); }}>
+                🔄 다시 하기
+              </NeoButton>
+              <ShareButton
+                showLabel
+                title={topic?.title || ''}
+                text={`테스트 결과: ${result?.label}`}
+              />
+            </div>
           </NeoCard>
         )}
       </main>

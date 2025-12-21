@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import { useTopic } from '../hooks/useTopic';
 import { NeoButton } from '../components/neo-button';
 import Comments from '../components/comments';
+import { ShareButton } from '../components/share-button';
 
 export default function Blog() {
   const { id } = useParams();
@@ -76,9 +77,17 @@ export default function Blog() {
             <p className="text-xs uppercase text-muted-foreground tracking-wide">랭킹공장 · Blog</p>
             <h1 className="font-heading text-2xl md:text-3xl">{topic.title}</h1>
           </div>
-          <NeoButton variant="outline" size="sm" onClick={() => navigate('/')}>
-            홈으로
-          </NeoButton>
+          <div className="flex gap-2">
+            <NeoButton variant="outline" size="sm" onClick={() => navigate('/')}>
+              홈으로
+            </NeoButton>
+            <ShareButton
+              compact
+              showLabel
+              title={topic.title}
+              text={`"${topic.title}" 블로그 글을 확인해보세요!`}
+            />
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-[minmax(0,1fr)_260px] gap-8 items-start">

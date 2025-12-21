@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { getCookie, setCookie } from 'hono/cookie';
 import { createClient, createAdminClient } from '../lib/supabase';
 import { generateTopicContent, generateImage } from '../lib/ai';
 
@@ -198,6 +199,115 @@ topics.delete('/:id', async (c) => {
     return c.json({ success: true });
   } catch (error) {
     return c.json({ success: false, error: (error as Error).message }, 500);
+  }
+});
+
+// Get or create session ID
+function getSessionId(c: any): string {
+  let sessionId = getCookie(c, 'session_id');
+
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    setCookie(c, 'session_id', sessionId, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      httpOnly: true,
+      secure: c.req.url.startsWith('https'),
+      sameSite: 'Lax',
+    });
+  }
+
+  return sessionId;
+}
+
+// Toggle like for a topic
+topics.post('/:id/like', async (c) => {
+  try {
+    const topicId = c.req.param('id');
+    const sessionId = getSessionId(c);
+    const supabase = createClient(c);
+
+    // Check if already liked
+    const { data: existingLike } = await supabase
+      .from('topic_likes')
+      .select('id')
+      .eq('topic_id', topicId)
+      .eq('session_id', sessionId)
+      .single();
+
+    let liked = false;
+    let likeCount = 0;
+
+    if (existingLike) {
+      // Unlike: delete the like
+      await supabase
+        .from('topic_likes')
+        .delete()
+        .eq('topic_id', topicId)
+        .eq('session_id', sessionId);
+
+      // Decrement like count
+      const { data: topic } = await supabase
+        .from('ranking_topics')
+        .select('like_count')
+        .eq('id', topicId)
+        .single();
+
+      likeCount = Math.max(0, (topic?.like_count || 0) - 1);
+
+      await supabase
+        .from('ranking_topics')
+        .update({ like_count: likeCount })
+        .eq('id', topicId);
+
+      liked = false;
+    } else {
+      // Like: create a new like
+      await supabase
+        .from('topic_likes')
+        .insert({ topic_id: topicId, session_id: sessionId });
+
+      // Increment like count
+      const { data: topic } = await supabase
+        .from('ranking_topics')
+        .select('like_count')
+        .eq('id', topicId)
+        .single();
+
+      likeCount = (topic?.like_count || 0) + 1;
+
+      await supabase
+        .from('ranking_topics')
+        .update({ like_count: likeCount })
+        .eq('id', topicId);
+
+      liked = true;
+    }
+
+    return c.json({ success: true, liked, likeCount });
+  } catch (error) {
+    console.error('topics.post /:id/like error', error);
+    return c.json({ success: false, error: (error as Error).message }, 500);
+  }
+});
+
+// Check like status for a topic
+topics.get('/:id/like/status', async (c) => {
+  try {
+    const topicId = c.req.param('id');
+    const sessionId = getSessionId(c);
+    const supabase = createClient(c);
+
+    const { data: existingLike } = await supabase
+      .from('topic_likes')
+      .select('id')
+      .eq('topic_id', topicId)
+      .eq('session_id', sessionId)
+      .single();
+
+    return c.json({ success: true, liked: !!existingLike });
+  } catch (error) {
+    return c.json({ success: true, liked: false });
   }
 });
 

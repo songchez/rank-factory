@@ -9,7 +9,7 @@
     "build": "bun run build:client",
     "build:client": "vite build --config client/vite.config.ts",
     "preview": "wrangler pages dev dist/client",
-    "deploy": "bun run build:client && bunx wrangler pages deploy dist/client",
+    "deploy": "export $(cat .env | grep -E '^CLOUDFLARE_' | xargs) && bun run build:client && bunx wrangler pages deploy dist/client",
     "start": "bun run server/index.ts",
     "start:prod": "bun run build && bun run start",
     "seed": "bun run scripts/seed/seed.ts",
