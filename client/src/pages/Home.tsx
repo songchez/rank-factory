@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import HomeFeed from '../components/home-feed';
-import { NeoButton } from '../components/neo-button';
-import { fetchTopics } from '../lib/api';
-import { useAuth } from '../hooks/useAuth';
-import { normalizeTopic } from '../lib/topics';
+import { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import HomeFeed from "../components/home-feed";
+import { NeoButton } from "../components/neo-button";
+import { fetchTopics } from "../lib/api";
+import { useAuth } from "../hooks/useAuth";
+import { normalizeTopic } from "../lib/topics";
 
 export default function Home() {
   const [topics, setTopics] = useState<any[]>([]);
@@ -13,7 +13,7 @@ export default function Home() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const filterMode = searchParams.get('mode') || 'A'; // Default to 배틀형
+  const filterMode = searchParams.get("mode") || "A"; // Default to 배틀형
 
   useEffect(() => {
     let cancelled = false;
@@ -24,7 +24,7 @@ export default function Home() {
         if (res.success && res.data) {
           setTopics(res.data.map(normalizeTopic));
         } else {
-          setError('토픽을 불러오지 못했습니다.');
+          setError("토픽을 불러오지 못했습니다.");
         }
       })
       .catch((err) => {
@@ -85,9 +85,12 @@ export default function Home() {
       <main className="container mx-auto pt-6 pb-10 space-y-6 px-4 lg:px-8">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="space-y-1">
-            <p className="text-[11px] uppercase text-muted-foreground tracking-wide">랭킹공장</p>
-            <h1 className="font-heading text-2xl md:text-3xl">오늘의 투표</h1>
-            <p className="text-xs text-muted-foreground">모바일 · 데스크톱 모두를 위한 반응형 카드 피드</p>
+            <p className="text-[11px] uppercase text-muted-foreground tracking-wide">
+              랭킹공장
+            </p>
+            <h1 className="font-heading text-2xl md:text-3xl">
+              오늘의 랭킹 피드
+            </h1>
           </div>
         </div>
 

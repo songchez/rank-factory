@@ -72,6 +72,7 @@ export default function Admin() {
     mode: "A",
   });
   const [editItems, setEditItems] = useState<ManualItem[]>([]);
+  const [editQuestions, setEditQuestions] = useState<any[]>([]);
   const [editLoading, setEditLoading] = useState(false);
   const [editMessage, setEditMessage] = useState<string | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
@@ -295,6 +296,13 @@ export default function Admin() {
           image_url: item.image_url || item.imageUrl || "",
         }))
       );
+      const questions = ((topic.meta as any)?.questions || []).map((q: any) => ({
+        id: q.id || '',
+        prompt: q.prompt || '',
+        image_url: q.image_url || '',
+        choices: q.choices || [{ text: '', weight: 0 }, { text: '', weight: 0 }],
+      }));
+      setEditQuestions(questions);
       setEditMessage(null);
       setEditError(null);
       setUploadError(null);
@@ -328,11 +336,18 @@ export default function Admin() {
 
     setEditLoading(true);
     try {
+      const topic = topics.find(t => t.id === editId);
+      const updatedMeta = {
+        ...(topic?.meta || {}),
+        questions: editQuestions.filter(q => q.prompt.trim() !== ''),
+      };
+
       await adminUpdateTopic(editId, {
         title: editForm.title.trim(),
         category: editForm.category,
         view_type: editForm.viewType as "battle" | "test" | "tier" | "fact",
         mode: editForm.mode,
+        meta: updatedMeta,
         items: normalizedItems,
       });
       setEditMessage("수정 완료! 목록을 새로고침했습니다.");
@@ -361,6 +376,7 @@ export default function Admin() {
       setEditMessage("삭제 완료! 목록을 새로고침했습니다.");
       setEditId("");
       setEditItems([]);
+      setEditQuestions([]);
       setEditForm({
         title: "",
         category: "General",
@@ -372,6 +388,70 @@ export default function Admin() {
       setEditError((err as Error).message || "삭제 실패");
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const addEditQuestion = () => {
+    const newId = `q${editQuestions.length + 1}`;
+    setEditQuestions([...editQuestions, {
+      id: newId,
+      prompt: '',
+      image_url: '',
+      choices: [
+        { text: '', weight: 1 },
+        { text: '', weight: 2 },
+      ],
+    }]);
+  };
+
+  const removeEditQuestion = (idx: number) => {
+    setEditQuestions(editQuestions.filter((_, i) => i !== idx));
+  };
+
+  const updateEditQuestion = (idx: number, field: string, value: any) => {
+    const updated = [...editQuestions];
+    updated[idx] = { ...updated[idx], [field]: value };
+    setEditQuestions(updated);
+  };
+
+  const addQuestionChoice = (qIdx: number) => {
+    const updated = [...editQuestions];
+    updated[qIdx].choices.push({ text: '', weight: 0 });
+    setEditQuestions(updated);
+  };
+
+  const removeQuestionChoice = (qIdx: number, cIdx: number) => {
+    const updated = [...editQuestions];
+    updated[qIdx].choices = updated[qIdx].choices.filter((_, i) => i !== cIdx);
+    setEditQuestions(updated);
+  };
+
+  const updateQuestionChoice = (qIdx: number, cIdx: number, field: string, value: any) => {
+    const updated = [...editQuestions];
+    updated[qIdx].choices[cIdx][field] = field === 'weight' ? Number(value) : value;
+    setEditQuestions(updated);
+  };
+
+  const handleUploadImageForQuestion = async (questionIdx: number, file?: File) => {
+    if (!file) return;
+
+    setUploadingKey(`question-${questionIdx}`);
+    setUploadError(null);
+
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      const res = await adminUploadImage({ dataUrl, filename: file.name });
+      const url = (res as any)?.url;
+
+      if (url) {
+        const updated = [...editQuestions];
+        updated[questionIdx].image_url = url;
+        setEditQuestions(updated);
+      }
+    } catch (err) {
+      setUploadError((err as Error).message || "이미지 업로드 실패");
+    } finally {
+      setUploadingKey(null);
     }
   };
 
@@ -663,6 +743,7 @@ export default function Admin() {
                 onClick={() => {
                   setEditId("");
                   setEditItems([]);
+                  setEditQuestions([]);
                   setEditForm({ title: "", category: "General", viewType: "battle", mode: "A" });
                   setEditMessage(null);
                   setEditError(null);
@@ -859,6 +940,153 @@ export default function Admin() {
                 배틀/퀴즈/티어 모드는 최소 2개, 팩트는 최소 1개 항목이 필요합니다. 이미지 URL은 붙여넣기(클립보드/데이터 URL)나 파일 선택으로 자동 업로드됩니다.
               </p>
             </div>
+
+            {editForm.mode === 'B' && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="font-medium text-sm text-slate-800">질문 목록</div>
+                  <Button variant="outline" type="button" onClick={addEditQuestion} disabled={!editId}>
+                    질문 추가
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  {editQuestions.map((q, qIdx) => (
+                    <div key={q.id} className="rounded-xl border-2 border-slate-300 bg-white p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="font-semibold text-slate-800">질문 {qIdx + 1}</div>
+                        <Button
+                          variant="outline"
+                          type="button"
+                          onClick={() => removeEditQuestion(qIdx)}
+                          className="text-xs"
+                        >
+                          삭제
+                        </Button>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-700">질문 ID</label>
+                        <input
+                          type="text"
+                          value={q.id}
+                          onChange={(e) => updateEditQuestion(qIdx, 'id', e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                          placeholder="예: q1"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-700">질문 내용</label>
+                        <textarea
+                          value={q.prompt}
+                          onChange={(e) => updateEditQuestion(qIdx, 'prompt', e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                          placeholder="질문을 입력하세요"
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <div className="md:col-span-6 space-y-1">
+                          <label className="text-xs font-semibold text-slate-700">이미지 URL</label>
+                          <input
+                            type="text"
+                            value={q.image_url || ''}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              updateEditQuestion(qIdx, 'image_url', value);
+                              if (value.startsWith("data:image")) {
+                                handleUploadImageForQuestion(qIdx, value);
+                              }
+                            }}
+                            onPaste={(e) => {
+                              const file = extractClipboardFile(e);
+                              if (file) {
+                                e.preventDefault();
+                                handleUploadImageForQuestion(qIdx, file);
+                              }
+                            }}
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                            placeholder="이미지 URL (선택사항)"
+                          />
+                        </div>
+                        <div className="md:col-span-4 flex flex-col gap-2">
+                          <label className="text-xs font-semibold text-slate-700">파일 업로드</label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleUploadImageForQuestion(qIdx, e.target.files?.[0])}
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs bg-white"
+                          />
+                          {uploadingKey === `question-${qIdx}` && (
+                            <span className="text-[11px] text-slate-500">업로드 중...</span>
+                          )}
+                        </div>
+                        <div className="md:col-span-2 flex items-end">
+                          {q.image_url && (
+                            <img
+                              src={q.image_url}
+                              alt="preview"
+                              className="w-full h-16 object-cover rounded border"
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-slate-700">선택지</label>
+                          <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => addQuestionChoice(qIdx)}
+                            className="text-xs py-1 px-2"
+                          >
+                            선택지 추가
+                          </Button>
+                        </div>
+
+                        {q.choices.map((choice: any, cIdx: number) => (
+                          <div key={cIdx} className="flex gap-2">
+                            <input
+                              type="text"
+                              value={choice.text}
+                              onChange={(e) => updateQuestionChoice(qIdx, cIdx, 'text', e.target.value)}
+                              className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                              placeholder="선택지 텍스트"
+                            />
+                            <input
+                              type="number"
+                              value={choice.weight}
+                              onChange={(e) => updateQuestionChoice(qIdx, cIdx, 'weight', e.target.value)}
+                              className="w-20 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200"
+                              placeholder="가중치"
+                            />
+                            {q.choices.length > 2 && (
+                              <Button
+                                variant="outline"
+                                type="button"
+                                onClick={() => removeQuestionChoice(qIdx, cIdx)}
+                                className="px-3 text-xs"
+                              >
+                                삭제
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  {editQuestions.length === 0 && (
+                    <p className="text-sm text-slate-500">
+                      질문을 추가하려면 "질문 추가" 버튼을 클릭하세요.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {uploadError && <div className="text-xs text-rose-600">{uploadError}</div>}
             {editError && <div className="text-sm text-rose-600">{editError}</div>}

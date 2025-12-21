@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { createAdminClient } from '../lib/supabase';
-import { buildOfflineSeed } from '../lib/seed';
 
 function hasSupabaseEnv(env?: any) {
   const supabaseUrl = env?.SUPABASE_URL || (typeof process !== 'undefined' && process.env?.SUPABASE_URL);

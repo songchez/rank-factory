@@ -6,7 +6,7 @@ import { NeoButton } from '../components/neo-button';
 import { useAuth } from '../hooks/useAuth';
 
 type Choice = { text: string; weight: number };
-type Question = { id: string; prompt: string; choices: Choice[] };
+type Question = { id: string; prompt: string; image_url?: string; choices: Choice[] };
 
 export default function Test() {
   const { id } = useParams();
@@ -24,6 +24,7 @@ export default function Test() {
       return metaQuestions.map((q, idx) => ({
         id: q.id || `q-${idx}`,
         prompt: q.prompt,
+        image_url: q.image_url,
         choices: q.choices?.map((c: any) => ({ text: c.text, weight: Number(c.weight) || 0 })) || [],
       }));
     }
@@ -31,6 +32,7 @@ export default function Test() {
     return (topic?.items || []).slice(0, 5).map((item, idx) => ({
       id: item.id || `fallback-${idx}`,
       prompt: `${item.name}가 눈앞에 있다면?`,
+      image_url: undefined,
       choices: [
         { text: '무조건 YES', weight: 4 },
         { text: '가끔 생각난다', weight: 2 },
@@ -129,6 +131,15 @@ export default function Test() {
         {!finished ? (
           <NeoCard className="p-4 space-y-3">
             <div className="text-xs text-muted-foreground">Q{index + 1}/{questions.length}</div>
+            {questions[index].image_url && (
+              <div className="w-full rounded-lg overflow-hidden border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <img
+                  src={questions[index].image_url}
+                  alt="질문 이미지"
+                  className="w-full h-48 object-cover"
+                />
+              </div>
+            )}
             <div className="font-heading text-lg leading-snug">{questions[index].prompt}</div>
             <div className="grid gap-2">
               {questions[index].choices.map((choice) => (

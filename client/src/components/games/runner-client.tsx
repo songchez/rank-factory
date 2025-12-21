@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { submitGameScoreAction } from "../../lib/actions";
-import { NeoButton } from "../neo-button";
 
 const GAME_ID = "runner";
 const WIDTH = 320;
@@ -8,7 +7,17 @@ const HEIGHT = 200;
 
 type Obstacle = { x: number; y: number; width: number; height: number };
 
-export function RunnerClient({ leaderboard, gameStarted, onGameEnd, locked = false }: { leaderboard: any[]; gameStarted?: boolean; onGameEnd?: () => void; locked?: boolean }) {
+export function RunnerClient({
+  leaderboard,
+  gameStarted,
+  onGameEnd,
+  locked = false,
+}: {
+  leaderboard: any[];
+  gameStarted?: boolean;
+  onGameEnd?: () => void;
+  locked?: boolean;
+}) {
   const [playerX, setPlayerX] = useState(50);
   const [playerY, setPlayerY] = useState(150);
   const [velY, setVelY] = useState(0);
@@ -36,7 +45,12 @@ export function RunnerClient({ leaderboard, gameStarted, onGameEnd, locked = fal
       if (Math.random() < 0.04) {
         setObstacles((obs) => [
           ...obs,
-          { x: WIDTH + 20, y: 160, width: 20 + Math.random() * 20, height: 20 + Math.random() * 10 },
+          {
+            x: WIDTH + 20,
+            y: 160,
+            width: 20 + Math.random() * 20,
+            height: 20 + Math.random() * 10,
+          },
         ]);
       }
 
@@ -119,7 +133,8 @@ export function RunnerClient({ leaderboard, gameStarted, onGameEnd, locked = fal
     return (
       <>
         <p className="text-sm text-muted-foreground">
-          귀여운 픽셀 고양이와 함께 장애물을 피하며 끝없이 달려보세요!<br/>
+          귀여운 픽셀 고양이와 함께 장애물을 피하며 끝없이 달려보세요!
+          <br />
           스페이스바 또는 화면 터치로 점프!
         </p>
         {locked && (
@@ -132,17 +147,28 @@ export function RunnerClient({ leaderboard, gameStarted, onGameEnd, locked = fal
           <h3 className="font-heading text-base mb-2">🏆 리더보드</h3>
           <div className="space-y-1.5">
             {leaderboard.slice(0, 8).map((row, idx) => (
-              <div key={row.id} className="flex items-center gap-2 bg-white p-2 border border-black/20 text-sm">
-                <div className="font-bold w-6 text-center text-xs">{idx + 1}</div>
+              <div
+                key={row.id}
+                className="flex items-center gap-2 bg-white p-2 border border-black/20 text-sm"
+              >
+                <div className="font-bold w-6 text-center text-xs">
+                  {idx + 1}
+                </div>
                 <div className="flex-1">
                   <div className="font-heading text-sm">{row.score}점</div>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {row.meta?.duration_ms ? `${(row.meta.duration_ms / 1000).toFixed(1)}초` : ""}
+                  {row.meta?.duration_ms
+                    ? `${(row.meta.duration_ms / 1000).toFixed(1)}초`
+                    : ""}
                 </div>
               </div>
             ))}
-            {leaderboard.length === 0 && <p className="text-xs text-muted-foreground py-2">아직 기록이 없습니다.</p>}
+            {leaderboard.length === 0 && (
+              <p className="text-xs text-muted-foreground py-2">
+                아직 기록이 없습니다.
+              </p>
+            )}
           </div>
         </div>
       </>
@@ -153,27 +179,50 @@ export function RunnerClient({ leaderboard, gameStarted, onGameEnd, locked = fal
     <div className="h-full flex flex-col space-y-3">
       <div className="flex-shrink-0 text-center">
         <div className="text-2xl font-heading">점수 {score}</div>
-        {gameOver && <div className="text-sm text-muted-foreground">게임 오버!</div>}
+        {gameOver && (
+          <div className="text-sm text-muted-foreground">게임 오버!</div>
+        )}
       </div>
 
       <div className="relative border-3 border-black bg-gradient-to-b from-sky-100 to-sky-200 rounded-lg overflow-hidden w-full max-w-xl mx-auto aspect-[16/10]">
         <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full h-full">
           {/* ground */}
-          <rect x={0} y={180} width={WIDTH} height={20} fill="#0ea5e9" opacity={0.3} />
+          <rect
+            x={0}
+            y={180}
+            width={WIDTH}
+            height={20}
+            fill="#0ea5e9"
+            opacity={0.3}
+          />
           {/* player */}
           <g transform={`translate(${playerX}, ${playerY})`}>
-            <rect width={16} height={20} fill="#f43f5e" stroke="#111" strokeWidth={1} rx={3} />
+            <rect
+              width={16}
+              height={20}
+              fill="#f43f5e"
+              stroke="#111"
+              strokeWidth={1}
+              rx={3}
+            />
             <circle cx={6} cy={7} r={2} fill="#fff" />
             <circle cx={10} cy={7} r={2} fill="#fff" />
             <rect x={5} y={14} width={6} height={2} fill="#111" />
           </g>
           {/* obstacles */}
           {obstacles.map((o, idx) => (
-            <rect key={idx} x={o.x} y={o.y} width={o.width} height={o.height} fill="#111" opacity={0.8} />
+            <rect
+              key={idx}
+              x={o.x}
+              y={o.y}
+              width={o.width}
+              height={o.height}
+              fill="#111"
+              opacity={0.8}
+            />
           ))}
         </svg>
       </div>
-
     </div>
   );
 }
