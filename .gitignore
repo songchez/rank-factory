@@ -30,4 +30,4 @@ logs/
 *.tmp
 .cache/
 
-seed/
+data/

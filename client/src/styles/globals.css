@@ -1,9 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url("https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css");
 
 @custom-variant dark (&:is(.dark *));
-
-@import url("https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css");
 @font-face {
   font-family: "Galmuri11";
   src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2506-1@1.0/Galmuri11-Bold.woff2")
