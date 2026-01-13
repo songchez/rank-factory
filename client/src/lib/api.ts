@@ -2,6 +2,32 @@
 // 필요 시만 VITE_API_BASE로 덮어씁니다.
 const API_BASE = import.meta.env.VITE_API_BASE || '';
 
+// Simple in-memory cache
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const cache = new Map<string, CacheEntry<any>>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+function getCached<T>(key: string): T | null {
+  const entry = cache.get(key);
+  if (!entry) return null;
+
+  const now = Date.now();
+  if (now - entry.timestamp > CACHE_DURATION) {
+    cache.delete(key);
+    return null;
+  }
+
+  return entry.data;
+}
+
+function setCache<T>(key: string, data: T): void {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
 async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${url}`, {
     ...options,
@@ -23,7 +49,16 @@ async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
 
 // Topics API
 export async function fetchTopics() {
-  return fetcher<{ success: boolean; data: any[] }>('/api/topics');
+  const cacheKey = 'topics';
+  const cached = getCached<{ success: boolean; data: any[] }>(cacheKey);
+
+  if (cached) {
+    return cached;
+  }
+
+  const result = await fetcher<{ success: boolean; data: any[] }>('/api/topics');
+  setCache(cacheKey, result);
+  return result;
 }
 
 export async function fetchTopic(id: string) {

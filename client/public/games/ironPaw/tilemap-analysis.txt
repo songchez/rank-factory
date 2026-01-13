@@ -1,0 +1,52 @@
+terrain_tiles_v2.png 분석 (320x512, 16x16 tiles = 20 cols x 32 rows)
+
+Row 0 (테두리 있는 풀 + 흙):
+  Col 0: 풀+갈색테두리 (top-left)
+  Col 1: 풀+갈색테두리 (top)
+  Col 2: 풀+갈색테두리 (top-right)
+  Col 3: 흙 (plain)
+  Col 4: 흙 (brown)
+
+Row 1 (테두리 풀 + 중앙 + 흙):
+  Col 0: 풀+테두리 (left)
+  Col 1: 밝은 풀 (center, 가장 밝음)
+  Col 2: 풀+테두리 (right)
+  Col 3: 흙 (brown)
+  Col 4: 흙-풀 전환
+
+Row 2 (테두리 하단 + 풀들):
+  Col 0: 풀+테두리 (bottom-left)
+  Col 1: 풀+테두리 (bottom)
+  Col 2: 풀+테두리 (bottom-right)
+  Col 3: 밝은 풀 (plain)
+  Col 4: 갈색 흙
+
+Row 3 (여러 풀 변형):
+  Col 0-4: 다양한 밝은 풀 타일들
+
+Row 4 (풀-흙 전환 상단):
+  Col 0: 전환 (top-left)
+  Col 1: 전환 (top)
+  Col 2: 전환 (top-right)
+  Col 3: 풀
+  Col 4: 흙
+
+Row 5 (전환 + 원형):
+  Col 0: 전환 (left)
+  Col 1: 원형 풀 (green circle)
+  Col 2: 원형 흙 (brown circle)
+  Col 3: 풀
+
+Row 6 (복잡한 전환):
+  Col 0-1: 전환 타일들
+  Col 2: 풀+작은 돌들
+  Col 3: 풀
+
+Row 8-9 (질감 있는 흙):
+  여러 흙 텍스처 타일들
+
+Row 10 (경로):
+  수평/수직 흙 경로 타일들
+
+Row 11:
+  Col 0: 물 타일 (cyan)

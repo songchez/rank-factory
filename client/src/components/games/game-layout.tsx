@@ -72,7 +72,7 @@ export function GameLayout({
       )}
 
       {/* 게임 컨텐츠 */}
-      <div className="flex-1 overflow-hidden p-3">
+      <div className="flex-1 overflow-hidden">
         {children}
       </div>
     </div>

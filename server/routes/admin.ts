@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { createAdminClient } from '../lib/supabase';
 import { generateTopicContent, generateImage } from '../lib/ai';
+import sharp from 'sharp';
 
 const admin = new Hono();
 
@@ -24,13 +25,19 @@ admin.post('/upload-image', async (c) => {
       return c.json({ success: false, error: 'Invalid data URL' }, 400);
     }
 
-    const contentType = match[1] || 'image/png';
     const base64Data = match[2];
     const binary = atob(base64Data);
-    const buffer = new Uint8Array(binary.length);
+    const inputBuffer = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
-      buffer[i] = binary.charCodeAt(i);
+      inputBuffer[i] = binary.charCodeAt(i);
     }
+
+    // Convert to WebP using sharp
+    const webpBuffer = await sharp(Buffer.from(inputBuffer))
+      .webp({ quality: 80 })
+      .toBuffer();
+
+    const contentType = 'image/webp';
 
     // Require service role key for storage write
     const env = c.env as any;
@@ -69,13 +76,12 @@ admin.post('/upload-image', async (c) => {
       })
       .catch(() => undefined);
 
-    const safeName = (filename || 'upload').replace(/[^a-zA-Z0-9._-]/g, '_');
-    const objectPath = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}.${contentType
-      .split('/')[1] || 'png'}`;
+    const safeName = (filename || 'upload').replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\.(png|jpg|jpeg|gif)$/i, '');
+    const objectPath = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}.webp`;
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(objectPath, buffer, { contentType, upsert: true });
+      .upload(objectPath, webpBuffer, { contentType, upsert: true });
 
     if (uploadError) throw uploadError;
 

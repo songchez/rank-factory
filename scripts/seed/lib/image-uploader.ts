@@ -2,6 +2,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { createHash } from 'crypto';
+import sharp from 'sharp';
 
 export class ImageUploader {
   private supabase: SupabaseClient;
@@ -21,13 +22,13 @@ export class ImageUploader {
   }
 
   /**
-   * Generate a stable filename from image content
+   * Generate a stable filename from image content (always .webp)
    */
   private generateFilename(filePath: string, content: Buffer): string {
     const ext = path.extname(filePath);
     const hash = createHash('md5').update(content).digest('hex').slice(0, 12);
     const basename = path.basename(filePath, ext).toLowerCase().replace(/[^a-z0-9]/g, '-');
-    return `${basename}-${hash}${ext}`;
+    return `${basename}-${hash}.webp`;
   }
 
   /**
@@ -44,14 +45,18 @@ export class ImageUploader {
       throw new Error(`Image file not found: ${absolutePath}`);
     }
 
-    // Read file
+    // Read file and convert to WebP
     const fileBuffer = fs.readFileSync(absolutePath);
-    const contentType = this.getContentType(absolutePath);
+    const webpBuffer = await sharp(fileBuffer)
+      .webp({ quality: 80 })
+      .toBuffer();
+
+    const contentType = 'image/webp';
     const filename = this.generateFilename(absolutePath, fileBuffer);
     const storagePath = `uploads/${filename}`;
 
     if (this.verbose) {
-      console.log(`  📤 Uploading ${path.basename(absolutePath)} → ${storagePath}`);
+      console.log(`  📤 Uploading ${path.basename(absolutePath)} → ${storagePath} (converted to WebP)`);
     }
 
     // Check if file already exists
@@ -72,7 +77,7 @@ export class ImageUploader {
     const { data, error } = await this.supabase
       .storage
       .from(this.bucket)
-      .upload(storagePath, fileBuffer, {
+      .upload(storagePath, webpBuffer, {
         contentType,
         upsert: false,
       });

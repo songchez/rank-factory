@@ -16,6 +16,7 @@ import ColorMatch from "./pages/games/ColorMatch";
 import Runner from "./pages/games/Runner";
 import TenSeconds from "./pages/games/TenSeconds";
 import FeatherFlight from "./pages/games/FeatherFlight";
+import IronPawSurvival from "./pages/games/IronPawSurvival";
 import DesktopHeader from "./components/desktop-header";
 import NotFound from "./pages/NotFound";
 
@@ -57,6 +58,7 @@ function AppShell() {
           <Route path="/games/runner" element={<Runner />} />
           <Route path="/games/ten-seconds" element={<TenSeconds />} />
           <Route path="/games/feather-flight" element={<FeatherFlight />} />
+          <Route path="/games/ironpaw-survival" element={<IronPawSurvival />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
